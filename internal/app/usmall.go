@@ -7,9 +7,9 @@ import (
 )
 
 func Run() {
-	dataUsMall, errorUsMall := usmall.Parse()
-	if errorUsMall != nil {
-		fmt.Println(errorUsMall)
-	}
-	fmt.Println(dataUsMall)
+	items := new(usmall.Variety)
+
+	items.ParsePodSection("https://usmall.ru/products/women/clothes/faux-fur-shearling-coats")
+
+	fmt.Println(items)
 }
