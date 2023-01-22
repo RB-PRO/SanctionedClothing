@@ -56,8 +56,8 @@ func (variety Variety) SaveXlsx(filename string) error {
 	setHead(book, wotkSheet, 8, "Артикул")                // Article
 	setHead(book, wotkSheet, 9, "Производитель")          // Manufacturer
 	setHead(book, wotkSheet, 10, "Цена")                  // Price
-	setHead(book, wotkSheet, 11, "Описание товара")       // Description
-	setHead(book, wotkSheet, 12, "Ссылки на картинки")    // ImageLink
+	setHead(book, wotkSheet, 11, "Описание товара Rus")   // Description eng
+	setHead(book, wotkSheet, 12, "Описание товара Eng")   // Description rus
 	setHead(book, wotkSheet, 13, "Цвета")                 // Colors
 	setHead(book, wotkSheet, 14, "Размеры")               // Size
 	startIndexCollumn := 15
@@ -65,24 +65,24 @@ func (variety Variety) SaveXlsx(filename string) error {
 	// Создаём мапу, которая будет содержать значения номеров колонок
 	colName := make(map[string]int)
 	for indexItem, valItem := range variety.Product {
-		setCell(book, wotkSheet, indexItem, 1, valItem.Catalog)                   // Каталог
-		setCell(book, wotkSheet, indexItem, 2, valItem.PodCatalog)                // ПодКаталог
-		setCell(book, wotkSheet, indexItem, 3, valItem.Section)                   // Секция
-		setCell(book, wotkSheet, indexItem, 4, valItem.PodSection)                // Подсекция
-		setCell(book, wotkSheet, indexItem, 5, valItem.Name)                      // Название товара
-		setCell(book, wotkSheet, indexItem, 6, valItem.FullName)                  // Полное название товара
-		setCell(book, wotkSheet, indexItem, 7, URL+valItem.Link)                  // Ссылка на товар
-		setCell(book, wotkSheet, indexItem, 8, valItem.Article)                   // Артикул
-		setCell(book, wotkSheet, indexItem, 9, valItem.Manufacturer)              // Производитель
-		setCell(book, wotkSheet, indexItem, 10, valItem.Price)                    // Цена
-		setCell(book, wotkSheet, indexItem, 11, valItem.Description.rus)          // Описание товара
-		setCell(book, wotkSheet, indexItem, 12, addURL_toLink(valItem.ImageLink)) // Ссылки на картинки
-		setCell(book, wotkSheet, indexItem, 13, valItem.Colors)                   // Цвета
-		setCell(book, wotkSheet, indexItem, 14, valItem.Size)                     // Размеры
+		setCell(book, wotkSheet, indexItem, 1, valItem.Catalog)          // Каталог
+		setCell(book, wotkSheet, indexItem, 2, valItem.PodCatalog)       // ПодКаталог
+		setCell(book, wotkSheet, indexItem, 3, valItem.Section)          // Секция
+		setCell(book, wotkSheet, indexItem, 4, valItem.PodSection)       // Подсекция
+		setCell(book, wotkSheet, indexItem, 5, valItem.Name)             // Название товара
+		setCell(book, wotkSheet, indexItem, 6, valItem.FullName)         // Полное название товара
+		setCell(book, wotkSheet, indexItem, 7, URL+valItem.Link)         // Ссылка на товар
+		setCell(book, wotkSheet, indexItem, 8, valItem.Article)          // Артикул
+		setCell(book, wotkSheet, indexItem, 9, valItem.Manufacturer)     // Производитель
+		setCell(book, wotkSheet, indexItem, 10, valItem.Price)           // Цена
+		setCell(book, wotkSheet, indexItem, 11, valItem.Description.rus) // Описание товара Rus
+		setCell(book, wotkSheet, indexItem, 12, valItem.Description.eng) // Описание товара Eng
+		setCell(book, wotkSheet, indexItem, 13, valItem.Colors)          // Цвета
+		setCell(book, wotkSheet, indexItem, 14, valItem.Size)            // Размеры
 
-		for key, val := range valItem.Specifications {
+		// Обработка мапы картинок
+		for key, val := range valItem.Image {
 			if _, ok := colName[key]; ok { // Если такое значение существует(т.е. существует колонка)
-				//do something here
 				setCell(book, wotkSheet, indexItem, colName[key], val)
 			} else {
 				colName[key] = startIndexCollumn
@@ -90,8 +90,19 @@ func (variety Variety) SaveXlsx(filename string) error {
 				setCell(book, wotkSheet, indexItem, colName[key], val)
 				startIndexCollumn++
 			}
-
 		}
+		// Обработка мапы доп полей
+		for key, val := range valItem.Specifications {
+			if _, ok := colName[key]; ok { // Если такое значение существует(т.е. существует колонка)
+				setCell(book, wotkSheet, indexItem, colName[key], val)
+			} else {
+				colName[key] = startIndexCollumn
+				setHead(book, wotkSheet, colName[key], key)
+				setCell(book, wotkSheet, indexItem, colName[key], val)
+				startIndexCollumn++
+			}
+		}
+
 	}
 
 	// Закрыть книгу
@@ -102,6 +113,7 @@ func (variety Variety) SaveXlsx(filename string) error {
 	return nil
 }
 
+/*
 // Добавить ссылку в массив строк
 func addURL_toLink(links []string) []string {
 	for index := range links {
@@ -109,6 +121,7 @@ func addURL_toLink(links []string) []string {
 	}
 	return links
 }
+*/
 
 // Вписать значение в ячейку
 func setCell(file *excelize.File, wotkSheet string, y, x int, value interface{}) {

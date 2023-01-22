@@ -33,10 +33,10 @@ type Product struct {
 		eng string
 		rus string
 	}
-	ImageLink      []string          // Ссылки на картинки
-	Colors         []string          // Цвета
-	Size           []string          // Размеры
-	Specifications map[string]string // Остальные характеристики
+	Image          map[string][]string // Пара картинок, где ключ - цвет
+	Colors         []string            // Цвета
+	Size           []string            // Размеры
+	Specifications map[string]string   // Остальные характеристики
 }
 
 // Метод, который парсит [страницу товара]
@@ -107,7 +107,7 @@ func (product *Product) ParseProduct() {
 			imgHref = strings.ReplaceAll(imgHref, "https://usmall.ru", "")
 			imgHref = strings.TrimSpace(imgHref)
 
-			product.ImageLink = append(product.ImageLink, imgHref)
+			product.Image["main"] = append(product.Image["main"], imgHref)
 		}
 	})
 
