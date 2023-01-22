@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/usmall"
+	"github.com/cheggaaa/pb"
 )
 
 func Run() {
@@ -18,23 +19,6 @@ func Run() {
 	//variety.ParsePage("/products/boy/clothes/kids-robes")
 
 	//fmt.Printf("Всего %d товаров. Ссылка на товар %#v\n", len(variety.Product), variety.Product[0].Link)
-
-	// *************************************************
-	// Спасить вообще всё
-	for _, valuePodSection := range podSections.Link {
-		variety.ParsePage(valuePodSection)
-	}
-	fmt.Println("len(variety.Product)", len(variety.Product))
-	// Пропарсить всё
-	for i := 0; i < len(variety.Product); i++ {
-		fmt.Println(i, usmall.URL+variety.Product[i].Link)
-		MyCode := variety.Product[i].Link      // Код товара
-		MyCode, _ = usmall.CodeOfLink(MyCode)  // Вычленить код товара
-		ware, _ := usmall.Ware(MyCode)         // Получить запрос с API
-		variety.Product[i].WareInProduct(ware) // Преобразовать в домашнюю структуру
-		time.Sleep(100 * time.Microsecond)
-	}
-	// *************************************************
 
 	/*
 		// Тестовый парсинг карточки товара с шубой с выгрузкой из фронта
@@ -75,5 +59,28 @@ func Run() {
 		}
 	*/
 
+	// *************************************************
+	// Спасить вообще всё
+	fmt.Println("Спарсить все pages, чтобы получить все ссылки")
+	bar := pb.StartNew(len(podSections.Link))
+	for _, valuePodSection := range podSections.Link {
+		bar.Increment() // Прибавляем 1 к отображению
+		variety.ParsePage(valuePodSection)
+	}
+	bar.Finish()
+
+	// Пропарсить всё
+	bar2 := pb.StartNew(len(podSections.Link))
+	for i := 0; i < len(variety.Product); i++ {
+		bar2.Increment() // Прибавляем 1 к отображению
+		//fmt.Println(i, usmall.URL+variety.Product[i].Link)
+		MyCode := variety.Product[i].Link      // Код товара
+		MyCode, _ = usmall.CodeOfLink(MyCode)  // Вычленить код товара
+		ware, _ := usmall.Ware(MyCode)         // Получить запрос с API
+		variety.Product[i].WareInProduct(ware) // Преобразовать в домашнюю структуру
+		time.Sleep(20 * time.Microsecond)
+	}
+	bar.Finish()
+	// *************************************************
 	variety.SaveXlsx("usmoll")
 }
