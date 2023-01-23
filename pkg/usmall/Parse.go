@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cheggaaa/pb"
 	"github.com/gocolly/colly"
 )
 
@@ -129,12 +130,29 @@ func (product *Product) ParseProduct() {
 	product.Specifications = mapas // Заполнение дополнительных параметров
 }
 
+// Узнать количество страниц в ПодСекции
+//
+// [ПодСекции]: https://usmall.ru/products/women/clothes/puhoviki?page=38
+func lenPodSection(link string) int {
+	c := colly.NewCollector()
+	c.UserAgent = "Golang"
+	var pages int
+
+	// Поиск ссылки на товар
+	c.OnHTML("a[class='__last']", func(e *colly.HTMLElement) {
+		pages, _ = strconv.Atoi(e.DOM.Text())
+
+	})
+
+	c.Visit(URL + link)
+	return pages
+}
+
 // Пропарсить PodSection на ссылки на товары
 //
 // Спарсить один подраздел и создать карточку с товарами
 // [PodSection]: /products/boy/clothes/kids-robes
 func (variety *Variety) ParsePage(link string) {
-	var exit bool // Переменная, отвечающая за выходиз цикла, который просматривает все товары
 	c := colly.NewCollector()
 	c.UserAgent = "Golang"
 
@@ -152,28 +170,6 @@ func (variety *Variety) ParsePage(link string) {
 		}
 	})
 
-	/*
-		f, err := os.Create("html.txt")
-		if err != nil {
-			fmt.Println(err)
-		}
-		html, _ := e.DOM.Html()
-		f.WriteString(fmt.Sprintf("%v\n%v\n%v\n%v\n%v", link, html, hrefLink, err, exit))
-		f.Close()
-	*/
-
-	// Если на текущем листе написсано: "Не осталось товаров этой категории"
-	c.OnHTML("div[class='c-products-empty__text'] p[class=__text]", func(e *colly.HTMLElement) {
-		if strings.Contains(e.DOM.Text(), "Не осталось товаров этой категории") {
-			exit = true
-		}
-	})
-
-	// Если нет следущего листа
-	c.OnHTML("span[class='__next __disabled']", func(e *colly.HTMLElement) {
-		exit = true
-	})
-
 	// Обработка ошибки
 	c.OnError(func(r *colly.Response, e error) {
 		fmt.Println("Ошибка. Поэтому немного ждём. Ошибка", e)
@@ -189,12 +185,12 @@ func (variety *Variety) ParsePage(link string) {
 		}
 	})
 
-	var cout int = 1
-	// Бесконечный цикл по pages
-	for !exit {
+	lenPS := lenPodSection(link)  // Всего страниц
+	bar := pb.StartNew(lenPS)     // Отслеживание прогресса
+	for i := 1; i <= lenPS; i++ { // Парсим
+		bar.Increment() // Прибавляем 1 к отображению
 		time.Sleep(50 * time.Millisecond)
-		c.Visit(URL + link + "?page=" + strconv.Itoa(cout))
-		fmt.Println("-->", cout)
-		cout++
+		c.Visit(URL + link + "?page=" + strconv.Itoa(i))
 	}
+	bar.Finish() // Завершение прогресса
 }
