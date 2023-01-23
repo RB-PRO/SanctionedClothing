@@ -2,6 +2,7 @@ package usmall
 
 import (
 	"fmt"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -135,23 +136,42 @@ func (product *Product) ParseProduct() {
 func (variety *Variety) ParsePage(link string) {
 	var exit bool // Переменная, отвечающая за выходиз цикла, который просматривает все товары
 	c := colly.NewCollector()
+	c.UserAgent = "Golang"
 
 	// Поиск ссылки на товар
-	c.OnHTML("a[class='__img __fg']", func(e *colly.HTMLElement) {
-		hrefLink, isHref := e.DOM.Attr("href")
+	c.OnHTML("section[class='p-products c-main-content']", func(e *colly.HTMLElement) {
+		hrefLink, isHref := e.DOM.Find("a[class='__img __fg']").Attr("href")
 		if isHref {
-			variety.Product = append(variety.Product, Product{Link: hrefLink})
+			variety.Product = append(variety.Product, Product{
+				Link:       hrefLink,
+				Catalog:    e.DOM.Find("nav[class='c-crumbs wrapper'] span:nth-child(2) a").Text(),
+				PodCatalog: e.DOM.Find("nav[class='c-crumbs wrapper'] span:nth-child(3) a").Text(),
+				Section:    e.DOM.Find("nav[class='c-crumbs wrapper'] span:nth-child(4) a").Text(),
+				PodSection: e.DOM.Find("nav[class='c-crumbs wrapper'] span:nth-child(5) a").Text(),
+			})
 		}
 	})
 
-	// Тег a или span, который должен сожержать или нет ссылку на следующую страницу. Если нет - выходим
-	c.OnHTML("[class^=__next]", func(e *colly.HTMLElement) {
-		hrefLink, isHref := e.DOM.Attr("href")
-		if isHref {
-			link = hrefLink
-		} else {
+	/*
+		f, err := os.Create("html.txt")
+		if err != nil {
+			fmt.Println(err)
+		}
+		html, _ := e.DOM.Html()
+		f.WriteString(fmt.Sprintf("%v\n%v\n%v\n%v\n%v", link, html, hrefLink, err, exit))
+		f.Close()
+	*/
+
+	// Если на текущем листе написсано: "Не осталось товаров этой категории"
+	c.OnHTML("div[class='c-products-empty__text'] p[class=__text]", func(e *colly.HTMLElement) {
+		if strings.Contains(e.DOM.Text(), "Не осталось товаров этой категории") {
 			exit = true
 		}
+	})
+
+	// Если нет следущего листа
+	c.OnHTML("span[class='__next __disabled']", func(e *colly.HTMLElement) {
+		exit = true
 	})
 
 	// Обработка ошибки
@@ -160,11 +180,21 @@ func (variety *Variety) ParsePage(link string) {
 		time.Sleep(5 * time.Second)
 	})
 
-	var cout int
+	// Обработка ошибки после ответа сервера
+	c.OnResponse(func(r *colly.Response) {
+		//fmt.Println("status:", r.StatusCode)
+		if r.StatusCode != http.StatusOK { // Если нет ответа
+			fmt.Println("Ошибка. Поэтому немного ждём. Статус", r.StatusCode)
+			time.Sleep(5 * time.Second)
+		}
+	})
+
+	var cout int = 1
 	// Бесконечный цикл по pages
 	for !exit {
+		time.Sleep(50 * time.Millisecond)
+		c.Visit(URL + link + "?page=" + strconv.Itoa(cout))
 		fmt.Println("-->", cout)
-		c.Visit(URL + link)
 		cout++
 	}
 }
