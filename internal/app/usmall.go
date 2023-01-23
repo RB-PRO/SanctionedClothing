@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/usmall"
-	"github.com/cheggaaa/pb"
 )
 
 func Run() {
@@ -62,25 +61,29 @@ func Run() {
 	// *************************************************
 	// Спасить вообще всё
 	fmt.Println("Спарсить все pages, чтобы получить все ссылки")
-	bar := pb.StartNew(len(podSections.Link))
+	//bar := pb.StartNew(len(podSections.Link))
 	for _, valuePodSection := range podSections.Link {
-		bar.Increment() // Прибавляем 1 к отображению
+		time.Sleep(50 * time.Millisecond)
+		//bar.Increment() // Прибавляем 1 к отображению
+		fmt.Println("->", valuePodSection)
 		variety.ParsePage(valuePodSection)
 	}
-	bar.Finish()
+	//bar.Finish()
 
-	// Пропарсить всё
-	bar2 := pb.StartNew(len(podSections.Link))
-	for i := 0; i < len(variety.Product); i++ {
-		bar2.Increment() // Прибавляем 1 к отображению
-		//fmt.Println(i, usmall.URL+variety.Product[i].Link)
-		MyCode := variety.Product[i].Link      // Код товара
-		MyCode, _ = usmall.CodeOfLink(MyCode)  // Вычленить код товара
-		ware, _ := usmall.Ware(MyCode)         // Получить запрос с API
-		variety.Product[i].WareInProduct(ware) // Преобразовать в домашнюю структуру
-		time.Sleep(20 * time.Microsecond)
-	}
-	bar.Finish()
+	/*
+		// Пропарсить всё
+		bar2 := pb.StartNew(len(podSections.Link))
+		for i := 0; i < len(variety.Product); i++ {
+			bar2.Increment() // Прибавляем 1 к отображению
+			//fmt.Println(i, usmall.URL+variety.Product[i].Link)
+			MyCode := variety.Product[i].Link      // Код товара
+			MyCode, _ = usmall.CodeOfLink(MyCode)  // Вычленить код товара
+			ware, _ := usmall.Ware(MyCode)         // Получить запрос с API
+			variety.Product[i].WareInProduct(ware) // Преобразовать в домашнюю структуру
+			time.Sleep(20 * time.Microsecond)
+		}
+		bar.Finish()
+	*/
 	// *************************************************
 	variety.SaveXlsx("usmoll")
 }

@@ -1,9 +1,11 @@
 package usmall
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gocolly/colly"
 )
@@ -152,8 +154,17 @@ func (variety *Variety) ParsePage(link string) {
 		}
 	})
 
+	// Обработка ошибки
+	c.OnError(func(r *colly.Response, e error) {
+		fmt.Println("Ошибка. Поэтому немного ждём. Ошибка", e)
+		time.Sleep(5 * time.Second)
+	})
+
+	var cout int
 	// Бесконечный цикл по pages
 	for !exit {
+		fmt.Println("-->", cout)
 		c.Visit(URL + link)
+		cout++
 	}
 }
