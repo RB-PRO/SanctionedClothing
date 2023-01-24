@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/usmall"
+	"github.com/cheggaaa/pb"
 )
 
 func Run() {
@@ -13,6 +14,9 @@ func Run() {
 
 	fmt.Println(len(podSections.Link))
 	fmt.Println(podSections.Link[0])
+
+	//podSections.Link = podSections.Link[:1] // немного сократить для примера
+	//fmt.Println("podSections.Link", podSections.Link)
 
 	var variety usmall.Variety
 	//variety.ParsePage("/products/boy/clothes/kids-robes")
@@ -60,30 +64,30 @@ func Run() {
 
 	// *************************************************
 	// Спасить вообще всё
-	fmt.Println("Спарсить все pages, чтобы получить все ссылки")
+	fmt.Println("Спарсить все pages, чтобы получить все ссылки:")
 	//bar := pb.StartNew(len(podSections.Link))
 	for _, valuePodSection := range podSections.Link {
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(20 * time.Millisecond)
 		//bar.Increment() // Прибавляем 1 к отображению
 		fmt.Println("->", valuePodSection)
 		variety.ParsePage(valuePodSection)
 	}
 	//bar.Finish()
 
-	/*
-		// Пропарсить всё
-		bar2 := pb.StartNew(len(podSections.Link))
-		for i := 0; i < len(variety.Product); i++ {
-			bar2.Increment() // Прибавляем 1 к отображению
-			//fmt.Println(i, usmall.URL+variety.Product[i].Link)
-			MyCode := variety.Product[i].Link      // Код товара
-			MyCode, _ = usmall.CodeOfLink(MyCode)  // Вычленить код товара
-			ware, _ := usmall.Ware(MyCode)         // Получить запрос с API
-			variety.Product[i].WareInProduct(ware) // Преобразовать в домашнюю структуру
-			time.Sleep(20 * time.Microsecond)
-		}
-		bar.Finish()
-	*/
+	// Пропарсить всё
+	fmt.Println("Пропарсить всё")
+	bar2 := pb.StartNew(len(variety.Product))
+	for i := 0; i < len(variety.Product); i++ {
+		bar2.Increment() // Прибавляем 1 к отображению
+		//fmt.Println(i, usmall.URL+variety.Product[i].Link)
+		MyCode := variety.Product[i].Link      // Код товара
+		MyCode, _ = usmall.CodeOfLink(MyCode)  // Вычленить код товара
+		ware, _ := usmall.Ware(MyCode)         // Получить запрос с API
+		variety.Product[i].WareInProduct(ware) // Преобразовать в домашнюю структуру
+		time.Sleep(20 * time.Microsecond)
+	}
+	bar2.Finish()
+
 	// *************************************************
 	variety.SaveXlsx("usmoll")
 }
