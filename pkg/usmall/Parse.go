@@ -145,6 +145,9 @@ func lenPodSection(link string) int {
 	})
 
 	c.Visit(URL + link)
+	if pages == 0 {
+		pages = 1
+	}
 	return pages
 }
 
