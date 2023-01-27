@@ -195,7 +195,7 @@ func (variety Variety) SaveXlsxCsvs(filename string) error {
 		//setCell(book, wotkSheet, row, 11, valItem.Price)           // Цена
 		//setCell(book, wotkSheet, row, 12, valItem.Colors)          // Цвета // Буду ориентироваться на мапу картинок
 		//setCell(book, wotkSheet, row, 13, valItem.Size) // Размеры
-		setCell(book, wotkSheet, row, 14, valItem.Description.rus+"\n"+SpecificationsString) // Описание товара Rus
+		setCell(book, wotkSheet, row, 15, valItem.Description.rus+"\n"+SpecificationsString) // Описание товара Rus
 		row++
 		// Обработка мапы картинок
 		for keyImage, valImage := range valItem.Image {
