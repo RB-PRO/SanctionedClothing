@@ -13,7 +13,8 @@ func Run() {
 	podSections := usmall.ParsePodSection()
 
 	fmt.Println(len(podSections.Link))
-	fmt.Println(podSections.Link[0])
+	//podSections.Link = podSections.Link[0:1]
+	//fmt.Println(podSections.Link[0])
 
 	//podSections.Link = podSections.Link[:1] // немного сократить для примера
 	//fmt.Println("podSections.Link", podSections.Link)
@@ -76,6 +77,9 @@ func Run() {
 
 	// Пропарсить всё
 	fmt.Println("Пропарсить всё")
+
+	//variety.Product = variety.Product[:5] // debug
+
 	bar2 := pb.StartNew(len(variety.Product))
 	for i := 0; i < len(variety.Product); i++ {
 		bar2.Increment() // Прибавляем 1 к отображению
@@ -90,4 +94,5 @@ func Run() {
 
 	// *************************************************
 	variety.SaveXlsx("usmoll")
+	variety.SaveXlsxCsvs("usmollcsv")
 }
