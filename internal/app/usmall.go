@@ -2,6 +2,9 @@ package app
 
 import (
 	"fmt"
+	"log"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/usmall"
@@ -12,14 +15,13 @@ func Run() {
 
 	podSections := usmall.ParsePodSection()
 
-	fmt.Println(len(podSections.Link))
+	//var variety usmall.Variety
 	//podSections.Link = podSections.Link[0:1]
 	//fmt.Println(podSections.Link[0])
 
 	//podSections.Link = podSections.Link[:1] // немного сократить для примера
 	//fmt.Println("podSections.Link", podSections.Link)
 
-	var variety usmall.Variety
 	//variety.ParsePage("/products/boy/clothes/kids-robes")
 
 	//fmt.Printf("Всего %d товаров. Ссылка на товар %#v\n", len(variety.Product), variety.Product[0].Link)
@@ -65,34 +67,37 @@ func Run() {
 
 	// *************************************************
 	// Спасить вообще всё
-	fmt.Println("Спарсить все pages, чтобы получить все ссылки:")
-	//bar := pb.StartNew(len(podSections.Link))
-	for _, valuePodSection := range podSections.Link {
-		time.Sleep(20 * time.Millisecond)
+
+	for indexPodSectioen, valPodSection := range podSections.Link {
+		strPodSection := strconv.Itoa(indexPodSectioen) + " > " + strings.ReplaceAll(valPodSection, "/", "-") // Название файла текущей подсекции
+
+		log.Println(" -> ", indexPodSectioen, "/", len(podSections.Link), " ", strPodSection)
+
+		var variety usmall.Variety
+		fmt.Println("Спарсить все pages, чтобы получить все ссылки:")
 		//bar.Increment() // Прибавляем 1 к отображению
-		fmt.Println("->", valuePodSection)
-		variety.ParsePage(valuePodSection)
+		fmt.Println("->", usmall.URL+valPodSection)
+		variety.ParsePage(valPodSection)
+
+		// Пропарсить всё
+		fmt.Println("Пропарсить всё", len(variety.Product))
+
+		//variety.Product = variety.Product[:5] // debug
+
+		bar2 := pb.StartNew(len(variety.Product))
+		for i := 0; i < len(variety.Product); i++ {
+			bar2.Increment() // Прибавляем 1 к отображению
+			//fmt.Println(i, usmall.URL+variety.Product[i].Link)
+			MyCode := variety.Product[i].Link      // Код товара
+			MyCode, _ = usmall.CodeOfLink(MyCode)  // Вычленить код товара
+			ware, _ := usmall.Ware(MyCode)         // Получить запрос с API
+			variety.Product[i].WareInProduct(ware) // Преобразовать в домашнюю структуру
+			time.Sleep(20 * time.Microsecond)
+		}
+		bar2.Finish()
+
+		// *************************************************
+		//variety.SaveXlsx(strPodSection)
+		variety.SaveXlsxCsvs(strPodSection) // Мохранить в формате из ТЗ
 	}
-	//bar.Finish()
-
-	// Пропарсить всё
-	fmt.Println("Пропарсить всё")
-
-	//variety.Product = variety.Product[:5] // debug
-
-	bar2 := pb.StartNew(len(variety.Product))
-	for i := 0; i < len(variety.Product); i++ {
-		bar2.Increment() // Прибавляем 1 к отображению
-		//fmt.Println(i, usmall.URL+variety.Product[i].Link)
-		MyCode := variety.Product[i].Link      // Код товара
-		MyCode, _ = usmall.CodeOfLink(MyCode)  // Вычленить код товара
-		ware, _ := usmall.Ware(MyCode)         // Получить запрос с API
-		variety.Product[i].WareInProduct(ware) // Преобразовать в домашнюю структуру
-		time.Sleep(20 * time.Microsecond)
-	}
-	bar2.Finish()
-
-	// *************************************************
-	variety.SaveXlsx("usmoll")
-	variety.SaveXlsxCsvs("usmollcsv")
 }

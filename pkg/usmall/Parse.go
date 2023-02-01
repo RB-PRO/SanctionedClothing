@@ -159,16 +159,18 @@ func (variety *Variety) ParsePage(link string) {
 	c := colly.NewCollector()
 	c.UserAgent = "Golang"
 
+	catalog, podcatalog, section, podsection := catalogsNames(URL + link)
+
 	// Поиск ссылки на товар
-	c.OnHTML("section[class='p-products c-main-content']", func(e *colly.HTMLElement) {
-		hrefLink, isHref := e.DOM.Find("a[class='__img __fg']").Attr("href")
+	c.OnHTML("a[class='__img __fg']", func(e *colly.HTMLElement) {
+		hrefLink, isHref := e.DOM.Attr("href")
 		if isHref {
 			variety.Product = append(variety.Product, Product{
 				Link:       hrefLink,
-				Catalog:    e.DOM.Find("nav[class='c-crumbs wrapper'] span:nth-child(2) a").Text(),
-				PodCatalog: e.DOM.Find("nav[class='c-crumbs wrapper'] span:nth-child(3) a").Text(),
-				Section:    e.DOM.Find("nav[class='c-crumbs wrapper'] span:nth-child(4) a").Text(),
-				PodSection: e.DOM.Find("nav[class='c-crumbs wrapper'] span:nth-child(5) a").Text(),
+				Catalog:    catalog,
+				PodCatalog: podcatalog,
+				Section:    section,
+				PodSection: podsection,
 			})
 		}
 	})
@@ -188,12 +190,31 @@ func (variety *Variety) ParsePage(link string) {
 		}
 	})
 
-	lenPS := lenPodSection(link)  // Всего страниц
-	bar := pb.StartNew(lenPS)     // Отслеживание прогресса
+	lenPS := lenPodSection(link) // Всего страниц
+	bar := pb.StartNew(lenPS)    // Отслеживание прогресса
+
 	for i := 1; i <= lenPS; i++ { // Парсим
 		bar.Increment() // Прибавляем 1 к отображению
+
 		time.Sleep(50 * time.Millisecond)
 		c.Visit(URL + link + "?page=" + strconv.Itoa(i))
 	}
 	bar.Finish() // Завершение прогресса
+}
+
+func catalogsNames(link string) (string, string, string, string) {
+
+	var catalog, podcatalog, section, podsection string
+	c := colly.NewCollector()
+	c.UserAgent = "Golang"
+
+	c.OnHTML("nav[class='c-crumbs wrapper']", func(e *colly.HTMLElement) {
+		catalog = e.DOM.Find("span:nth-child(2) a").Text()
+		podcatalog = e.DOM.Find("span:nth-child(3) a").Text()
+		section = e.DOM.Find("span:nth-child(4) a").Text()
+		podsection = e.DOM.Find("span:nth-child(5) span").Text()
+	})
+	c.Visit(link)
+
+	return catalog, podcatalog, section, podsection
 }
