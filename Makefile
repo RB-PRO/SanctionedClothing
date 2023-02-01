@@ -15,6 +15,9 @@ pushW:
 pullW:
 	git pull https://github.com/RB-PRO/SanctionedClothing.git
 
+pushCar:
+	scp main root@194.87.107.129:go/SanctionedClothing/
+
 build-config:
 	go env GOOS GOARCH
 

@@ -17,7 +17,7 @@ func Run(startStr string) {
 
 	startInt, startError := strconv.Atoi(startStr)
 	if startError != nil {
-		log.Fatalln(">"+startStr+"<", "is not a number")
+		log.Fatalln("\""+startStr+"\"", "is not a number")
 	}
 
 	//var variety usmall.Variety
@@ -74,7 +74,7 @@ func Run(startStr string) {
 	// Спасить вообще всё
 
 	for indexPodSectioen, valPodSection := range podSections.Link {
-		if indexPodSectioen > startInt {
+		if indexPodSectioen >= startInt {
 			strPodSection := strconv.Itoa(indexPodSectioen) + " > " + strings.ReplaceAll(valPodSection, "/", "-") // Название файла текущей подсекции
 
 			log.Println(" -> ", indexPodSectioen, "/", len(podSections.Link), " ", strPodSection)
