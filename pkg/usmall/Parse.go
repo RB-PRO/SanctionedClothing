@@ -133,7 +133,7 @@ func (product *Product) ParseProduct() {
 // Узнать количество страниц в ПодСекции
 //
 // [ПодСекции]: https://usmall.ru/products/women/clothes/puhoviki?page=38
-func lenPodSection(link string) int {
+func LenPodSection(link string) int {
 	c := colly.NewCollector()
 	c.UserAgent = "Golang"
 	var pages int
@@ -190,7 +190,7 @@ func (variety *Variety) ParsePage(link string) {
 		}
 	})
 
-	lenPS := lenPodSection(link) // Всего страниц
+	lenPS := LenPodSection(link) // Всего страниц
 	bar := pb.StartNew(lenPS)    // Отслеживание прогресса
 
 	for i := 1; i <= lenPS; i++ { // Парсим
