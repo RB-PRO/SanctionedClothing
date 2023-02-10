@@ -2,14 +2,17 @@ package usmall
 
 import (
 	"testing"
+	"time"
+
+	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 )
 
 // Тест, который парсит страницы каталога
 func TestParsePage(t *testing.T) {
-	var variety Variety
+	var variety bases.Variety2
 
 	link := `/products/all/home/vyazanye-pledy` // Ссылка на категорию
-	variety.ParsePage(link)
+	ParsePage(&variety, link)
 
 	if len(variety.Product) == 0 {
 		t.Fatal(`Товары не найдены. Вообще.`)
@@ -48,4 +51,27 @@ func TestCodeOfLink(t *testing.T) {
 	if code != "477964" && errorCode != nil {
 		t.Fatalf(`Код страницы иной. Результат: %s, а должно быть %s.\n%v`, code, "477964", errorCode)
 	}
+}
+
+// Полная страница парсинга на примере вязаных пледов
+func TestMain(t *testing.T) {
+	var podsec PodSection
+	podsec.Link = make([]string, 1)
+	podsec.Link[0] = "/products/all/home/vyazanye-pledy"
+
+	var variety bases.Variety2
+	ParsePage(&variety, podsec.Link[0])
+
+	//variety.Product = variety.Product[:5] // debug
+
+	for i := 0; i < len(variety.Product); i++ {
+		MyCode := variety.Product[i].Link         // Код товара
+		MyCode, _ = CodeOfLink(MyCode)            // Вычленить код товара
+		ware, _ := Ware(MyCode)                   // Получить запрос с API
+		WareInProduct2(&variety.Product[i], ware) // Преобразовать в домашнюю структуру
+		time.Sleep(20 * time.Microsecond)
+	}
+
+	// *************************************************
+	variety.SaveXlsxCsvs("strPodSection") // Cохранить в формате из ТЗ
 }

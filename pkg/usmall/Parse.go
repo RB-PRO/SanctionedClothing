@@ -3,17 +3,14 @@ package usmall
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/cheggaaa/pb"
 	"github.com/gocolly/colly"
-)
 
-// Ссылка на сайт
-const URL string = "https://usmall.ru"
+	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
+)
 
 // Структура массива товаров
 type Variety struct {
@@ -43,6 +40,7 @@ type Product struct {
 	Specifications map[string]string   // Остальные характеристики
 }
 
+/*
 // Метод, который парсит [страницу товара]
 //
 // [страницу товара]: https://usmall.ru/product/477964-cropped-faux-fur-jacket-avec-les-filles
@@ -129,6 +127,7 @@ func (product *Product) ParseProduct() {
 
 	product.Specifications = mapas // Заполнение дополнительных параметров
 }
+*/
 
 // Узнать количество страниц в ПодСекции
 //
@@ -155,7 +154,8 @@ func LenPodSection(link string) int {
 //
 // Спарсить один подраздел и создать карточку с товарами
 // [PodSection]: /products/boy/clothes/kids-robes
-func (variety *Variety) ParsePage(link string) {
+
+func ParsePage(variety *bases.Variety2, link string) {
 	c := colly.NewCollector()
 	c.UserAgent = "Golang"
 
@@ -165,7 +165,7 @@ func (variety *Variety) ParsePage(link string) {
 	c.OnHTML("a[class='__img __fg']", func(e *colly.HTMLElement) {
 		hrefLink, isHref := e.DOM.Attr("href")
 		if isHref {
-			variety.Product = append(variety.Product, Product{
+			variety.Product = append(variety.Product, bases.Product2{
 				Link:       hrefLink,
 				Catalog:    catalog,
 				PodCatalog: podcatalog,
@@ -190,9 +190,8 @@ func (variety *Variety) ParsePage(link string) {
 		}
 	})
 
-	lenPS := LenPodSection(link) // Всего страниц
-	bar := pb.StartNew(lenPS)    // Отслеживание прогресса
-
+	lenPS := LenPodSection(link)  // Всего страниц
+	bar := pb.StartNew(lenPS)     // Отслеживание прогресса
 	for i := 1; i <= lenPS; i++ { // Парсим
 		bar.Increment() // Прибавляем 1 к отображению
 
@@ -202,6 +201,8 @@ func (variety *Variety) ParsePage(link string) {
 	bar.Finish() // Завершение прогресса
 }
 
+// Получить название каталога
+// Он же путь к товару
 func catalogsNames(link string) (string, string, string, string) {
 
 	var catalog, podcatalog, section, podsection string

@@ -8,7 +8,12 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 )
+
+// Ссылка на сайт
+const URL string = "https://usmall.ru"
 
 // https://usmall.ru/api/product/477964
 
@@ -92,9 +97,12 @@ func Ware(code string) (WareUsmall, error) {
 	return WareUsmallRes, nil
 }
 
+/*
 // Преобразовать результат работы API во внутреннюю структуру данных
 //
 //	WareUsmall > Product
+//
+// NE MENYAT
 func (product *Product) WareInProduct(ware WareUsmall) {
 	product.Name = ware.Name                // Название
 	product.FullName = ware.OriginName      // Полное название
@@ -124,6 +132,7 @@ func (product *Product) WareInProduct(ware WareUsmall) {
 		product.Image[keyImage] = RemoveDuplicateStr(product.Image[keyImage])
 	}
 }
+*/
 
 // Удалить дубликаты в слайсе
 func RemoveDuplicateStr(strSlice []string) []string {
@@ -153,4 +162,54 @@ func CodeOfLink(link string) (string, error) {
 	} else {
 		return linkStrs[0], nil
 	}
+}
+
+// Преобразовать результат работы API во внутреннюю структуру данных
+//
+//	WareUsmall > Product
+func WareInProduct2(product *bases.Product2, ware WareUsmall) {
+	product.Name = ware.Name                // Название
+	product.FullName = ware.OriginName      // Полное название
+	product.Article = strconv.Itoa(ware.ID) // Артикул
+	product.Manufacturer = ware.Brand.Name  // Производитель
+
+	product.Description.Eng = ware.OriginDescription // Описание на английском
+	product.Description.Rus = ware.Description       // Описание на русском
+
+	// product.Image = make(map[string][]string) // Выделить память в мапу
+
+	// Получить массив цветов
+	//colors := make([]string, 0)
+
+	// Выделяем память
+	product.Item = make(map[string]bases.ProdParam)
+	for _, valueWare := range ware.Variants {
+		colorKey := valueWare.ColorNameRu + " (" + valueWare.OriginColor + ")"
+
+		// Если НЕ существует мапа такого цвета
+		if entry, ok := product.Item[colorKey]; !ok {
+			product.Item[colorKey] = bases.ProdParam{}
+			entry.Image = make([]string, 0)
+			entry.Size = make([]string, 0)
+			entry.Specifications = make(map[string]string)
+		}
+
+		// Если существует мапа такого цвета
+		if entry, ok := product.Item[colorKey]; ok {
+			// Название цвета
+			entry.ColorEng = colorKey
+
+			// Цена
+			entry.Price = float64(valueWare.Price)
+
+			// Картинки
+			for _, valueImage := range valueWare.Images {
+				entry.Image = append(entry.Image, valueImage.URL)
+			}
+
+			// Размер
+			entry.Size = append(entry.Image, valueWare.RussianSize.Name)
+		}
+	}
+
 }
