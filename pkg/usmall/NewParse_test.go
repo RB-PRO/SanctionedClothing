@@ -75,3 +75,16 @@ func TestMain(t *testing.T) {
 	// *************************************************
 	variety.SaveXlsxCsvs("strPodSection") // Cохранить в формате из ТЗ
 }
+
+func TestWareInProduct2(t *testing.T) {
+	var variety bases.Variety2
+	variety.Product = make([]bases.Product2, 1)
+	MyCode := "https://usmall.ru/product/334932-mens-quilted-hooded-bomber-jacket-dkny?color=oxblood" // Код товара
+	MyCode, _ = CodeOfLink(MyCode)                                                                    // Вычленить код товараw
+	ware, _ := Ware(MyCode)                                                                           // Получить запрос с API
+	WareInProduct2(&variety.Product[0], ware)                                                         // Преобразовать в домашнюю структуру
+
+	t.Log("\n   All:", variety.Product[0].Item["Красный (Oxblood)"], "\n")
+	t.Log("\n Sizes:", variety.Product[0].Item["Красный (Oxblood)"].Size, "\n")
+	variety.SaveXlsxCsvs("test")
+}

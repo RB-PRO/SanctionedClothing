@@ -155,6 +155,7 @@ func RemoveDuplicateStr(strSlice []string) []string {
 //
 //	477964
 func CodeOfLink(link string) (string, error) {
+	link = strings.ReplaceAll(link, URL, "")
 	link = strings.ReplaceAll(link, "/product/", "")
 	linkStrs := strings.Split(link, "-")
 	if len(linkStrs[0]) == 0 {
@@ -178,26 +179,28 @@ func WareInProduct2(product *bases.Product2, ware WareUsmall) {
 
 	// product.Image = make(map[string][]string) // Выделить память в мапу
 
-	// Получить массив цветов
-	//colors := make([]string, 0)
-
 	// Выделяем память
 	product.Item = make(map[string]bases.ProdParam)
 	for _, valueWare := range ware.Variants {
 		colorKey := valueWare.ColorNameRu + " (" + valueWare.OriginColor + ")"
 
 		// Если НЕ существует мапа такого цвета
-		if entry, ok := product.Item[colorKey]; !ok {
-			product.Item[colorKey] = bases.ProdParam{}
-			entry.Image = make([]string, 0)
-			entry.Size = make([]string, 0)
-			entry.Specifications = make(map[string]string)
+		if _, ok := product.Item[colorKey]; !ok {
+			// То выделяем память в данные соответственно
+			product.Item[colorKey] = bases.ProdParam{
+				Image:          make([]string, 0),
+				Size:           make([]string, 0),
+				Specifications: make(map[string]string),
+			}
+			//product.Item[colorKey].Image = make([]string, 0)
+			//product.Item[colorKey].Size = make([]string, 0)
+			//product.Item[colorKey].Specifications = make(map[string]string)
 		}
 
 		// Если существует мапа такого цвета
 		if entry, ok := product.Item[colorKey]; ok {
 			// Название цвета
-			entry.ColorEng = colorKey
+			entry.ColorEng = valueWare.OriginColor
 
 			// Цена
 			entry.Price = float64(valueWare.Price)
@@ -208,8 +211,16 @@ func WareInProduct2(product *bases.Product2, ware WareUsmall) {
 			}
 
 			// Размер
-			entry.Size = append(entry.Image, valueWare.RussianSize.Name)
+			//entry.Size = append(entry.Image, valueWare.RussianSize.Name)
+			entry.Size = append(entry.Size, valueWare.OriginSize)
+			product.Size = append(product.Size, valueWare.OriginSize) // Все всех размеров
+
+			// Ссылка на страницу с цветом
+			entry.Link = URL + product.Link + "/?color=" + valueWare.OriginColor
+
+			// Добавляем эту промежуточную строкуту в нашу
+			product.Item[colorKey] = entry
 		}
 	}
-
+	product.Size = RemoveDuplicateStr(product.Size)
 }

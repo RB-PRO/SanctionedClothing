@@ -18,6 +18,8 @@ type Product2 struct {
 	Article      string // Артикул
 	Manufacturer string // Производитель
 
+	Size []string // Все возможные размеры
+
 	Description struct { // Описание товара
 		Eng string
 		Rus string
