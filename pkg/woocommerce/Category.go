@@ -21,7 +21,6 @@ func (root *NodeCategory) Add(parentId, id int) {
 	fmt.Printf("add: id=%v parentId=%v\n", id, parentId)
 
 	node := &NodeCategory{MeCat: MeCat{Id: id}, children: []*NodeCategory{}}
-
 	if parentId == 0 {
 		root = node
 	} else {
