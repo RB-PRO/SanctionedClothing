@@ -21,13 +21,12 @@ func Run() {
 		startInt, startError := strconv.Atoi(startStr)
 		if startError != nil {
 			log.Fatalln("\""+startStr+"\"", "is not a number")
-		}
-	*/
+		}*/
 
 	// *************************************************
 	// Спасить вообще всё
 
-	podSections.Link = podSections.Link[:1]
+	//podSections.Link = podSections.Link[:10]
 	for indexPodSectioen, valPodSection := range podSections.Link {
 		//if indexPodSectioen >= startInt {
 		strPodSection := strconv.Itoa(indexPodSectioen) + " > " + strings.ReplaceAll(valPodSection, "/", "-") // Название файла текущей подсекции
@@ -42,8 +41,6 @@ func Run() {
 
 		// Пропарсить всё
 		fmt.Println("Пропарсить всё", len(variety.Product))
-
-		variety.Product = variety.Product[:5] // debug
 
 		bar2 := pb.StartNew(len(variety.Product))
 		for i := 0; i < len(variety.Product); i++ {
