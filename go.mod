@@ -6,6 +6,7 @@ require (
 	github.com/cheggaaa/pb v1.0.29
 	github.com/gocolly/colly v1.2.0
 	github.com/mdigger/translit v0.0.0-20190913173519-84222363843c
+	github.com/tgglv/wc-api-go v0.0.0-20190414172022-59f6f9e75c86
 	github.com/xuri/excelize/v2 v2.7.0
 )
 
@@ -24,6 +25,7 @@ require (
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect
+	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	github.com/xuri/efp v0.0.0-20220603152613-6918739fd470 // indirect
 	github.com/xuri/nfp v0.0.0-20220409054826-5e722a1d9e22 // indirect

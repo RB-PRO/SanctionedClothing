@@ -3,3 +3,5 @@ password
 main
 main.exe
 *.xlsx
+consumer_key
+secret_key

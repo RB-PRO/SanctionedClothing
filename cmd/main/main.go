@@ -6,5 +6,7 @@ import (
 
 func main() {
 	//app.Run(os.Args[1])
-	app.Run()
+	//app.Run()
+	//app.RunWoocommerce()
+	app.Cats()
 }
