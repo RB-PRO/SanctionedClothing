@@ -28,9 +28,13 @@ func NewCategoryes() *Node {
 
 // Добавить категорию по родительскому ID
 func (root *Node) Add(parentID, id int) error {
+	if root == nil {
+		return errors.New("Add: Node of nil")
+	}
+
 	if parentID == 0 { // Для корневой категории
-		root.addNode(id) // Добавить Категорию в потомка
-		return nil
+
+		return root.addNode(id) // Добавить Категорию в потомка
 	}
 
 	// Ищем родительскую категори
@@ -39,14 +43,20 @@ func (root *Node) Add(parentID, id int) error {
 		return errorRoot
 	}
 
-	findRoot.addNode(id) // Добавить Категорию в потомка
-
-	return nil
+	return findRoot.addNode(id) // Добавить Категорию в потомка
 }
 
 // Выделение памяти/Добавление новой сторуктуры
-func (root *Node) addNode(id int) {
+func (root *Node) addNode(id int) error {
+	if root == nil {
+		return errors.New("addNode: Node of nil")
+	}
+
+	if root.Children[id] == nil {
+		root.Children[id] = new(Node)
+	}
 	root.Children[id] = &Node{Children: map[int]*Node{}, Value: MeCat{Id: id}}
+	return nil
 }
 
 // Поиска подкатегории по ID
