@@ -57,13 +57,15 @@ func (root *Node) addNode(id int) {
 
 // Поиска подкатегории по ID
 func (root *Node) FindId(id int) (*Node, error) {
-	for _, val := range root.Children {
-
+	for _, val := range root.Children { // Цикл по потомкам
 		// Если была найдена подкатегория
 		if val.Value.Id == id {
 			return val, nil
 		}
-		if FindVal, valError := val.FindId(id); valError != nil {
+
+		// Ищем в дочерних подкатегориях
+		FindVal, valError := val.FindId(id)
+		if valError != nil {
 			return FindVal, nil
 		}
 	}
