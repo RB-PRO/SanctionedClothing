@@ -1,9 +1,18 @@
 package woocommerce
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 )
 
+// Базовая структура данных
+type Node struct {
+	Value    MeCat         // Содержимое категории
+	Children map[int]*Node // Потомки категории
+}
+
+// Внутренняя структура данных
 type MeCat struct {
 	Id    int    // ID в системе WC
 	Name  string // Название категории
@@ -11,48 +20,64 @@ type MeCat struct {
 	Image string // Ссылка на картинку
 }
 
-type NodeCategory struct {
-	MeCat
-	children []*NodeCategory
+// Создать новый список категорий.
+func NewCategoryes() *Node {
+	n := new(Node)
+	n.Children = make(map[int]*Node)
+	n.Value = MeCat{}
+	n.Value.Id = 0
+	return n
 }
 
-func (root *NodeCategory) Add(parentId, id int) {
-	nodeTable := map[int]*NodeCategory{}
-	fmt.Printf("add: id=%v parentId=%v\n", id, parentId)
+// Добавить категорию по родительскому ID
+func (root *Node) Add(parentID, id int) error {
+	if parentID == 0 { // Для корневой категории
+		root.addNode(id) //// Добавить Категорию в потомка
+		return nil
+	}
 
-	node := &NodeCategory{MeCat: MeCat{Id: id}, children: []*NodeCategory{}}
-	if parentId == 0 {
-		root = node
-	} else {
+	// Ищем родительскую категори
+	findRoot, errorRoot := root.FindId(parentID)
+	if errorRoot != nil {
+		return errorRoot
+	}
 
-		parent, ok := nodeTable[parentId]
-		if !ok {
-			fmt.Printf("add: parentId=%v: not found\n", parentId)
-			return
+	findRoot.addNode(id) // Добавить Категорию в потомка
+
+	return nil
+}
+
+// Выделение памяти/Добавление новой сторуктуры
+func (root *Node) addNode(id int) {
+	root.Children[id] = new(Node)
+	root.Children[id].Children = make(map[int]*Node)
+	root.Children[id].Value = MeCat{}
+	root.Children[id].Value.Id = id
+}
+
+// Поиска подкатегории по ID
+func (root *Node) FindId(id int) (*Node, error) {
+	for _, val := range root.Children {
+
+		// Если была найдена подкатегория
+		if val.Value.Id == id {
+			return val, nil
 		}
-
-		parent.children = append(parent.children, node)
+		if FindVal, valError := val.FindId(id); valError != nil {
+			return FindVal, nil
+		}
 	}
-
-	nodeTable[id] = node
+	return nil, errors.New("не найден " + strconv.Itoa(id) + " id")
 }
 
-func (root *NodeCategory) ShowNode(prefix string) {
-	if prefix == "" {
-		fmt.Printf("%v\n\n", root.Id)
-	} else {
-		fmt.Printf("%v %v\n\n", prefix, root.Id)
-	}
-	for _, n := range root.children {
-		n.ShowNode(prefix + "--")
-	}
-}
-
-func (root *NodeCategory) Show() {
-	if root == nil {
-		fmt.Printf("show: root node not found\n")
+// Вывод всех категорий
+func (t *Node) PrintInorder(prefix string) {
+	if t == nil {
 		return
 	}
-	fmt.Printf("RESULT:\n")
-	root.ShowNode("")
+
+	fmt.Println(prefix, t.Value.Id)
+	for _, val := range t.Children {
+		val.PrintInorder(prefix + "-")
+	}
 }
