@@ -22,17 +22,14 @@ type MeCat struct {
 
 // Создать новый список категорий.
 func NewCategoryes() *Node {
-	n := new(Node)
-	n.Children = make(map[int]*Node)
-	n.Value = MeCat{}
-	n.Value.Id = 0
-	return n
+	return &Node{Children: map[int]*Node{}, Value: MeCat{Id: 0}}
+
 }
 
 // Добавить категорию по родительскому ID
 func (root *Node) Add(parentID, id int) error {
 	if parentID == 0 { // Для корневой категории
-		root.addNode(id) //// Добавить Категорию в потомка
+		root.addNode(id) // Добавить Категорию в потомка
 		return nil
 	}
 
@@ -49,37 +46,36 @@ func (root *Node) Add(parentID, id int) error {
 
 // Выделение памяти/Добавление новой сторуктуры
 func (root *Node) addNode(id int) {
-	root.Children[id] = new(Node)
-	root.Children[id].Children = make(map[int]*Node)
-	root.Children[id].Value = MeCat{}
-	root.Children[id].Value.Id = id
+	root.Children[id] = &Node{Children: map[int]*Node{}, Value: MeCat{Id: id}}
 }
 
 // Поиска подкатегории по ID
 func (root *Node) FindId(id int) (*Node, error) {
 	for _, val := range root.Children { // Цикл по потомкам
-		// Если была найдена подкатегория
-		if val.Value.Id == id {
-			return val, nil
-		}
+		if val != nil {
+			// Если была найдена подкатегория
+			if val.Value.Id == id {
+				return val, nil
+			}
 
-		// Ищем в дочерних подкатегориях
-		FindVal, valError := val.FindId(id)
-		if valError != nil {
-			return FindVal, nil
+			// Ищем в дочерних подкатегориях
+			FindVal, valError := val.FindId(id)
+			if valError != nil {
+				return FindVal, nil
+			}
 		}
 	}
 	return nil, errors.New("не найден " + strconv.Itoa(id) + " id")
 }
 
 // Вывод всех категорий
-func (t *Node) PrintInorder(prefix string) {
-	if t == nil {
+func (root *Node) PrintInorder(prefix string) {
+	if root == nil {
 		return
 	}
 
-	fmt.Println(prefix, t.Value.Id)
-	for _, val := range t.Children {
+	fmt.Println(prefix, root.Value.Id)
+	for _, val := range root.Children {
 		val.PrintInorder(prefix + "-")
 	}
 }
