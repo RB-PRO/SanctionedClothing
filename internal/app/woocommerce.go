@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/woocommerce"
+	"github.com/mrsinham/catego"
 )
 
 func RunWoocommerce() {
@@ -44,34 +45,27 @@ func RunWoocommerce() {
 
 }
 func Cats() {
-	var errAdd error
-	root := woocommerce.NewCategoryes()
-
-	errAdd = root.Add(0, 1)
-	if errAdd != nil {
-		fmt.Println(errAdd)
-	}
-	errAdd = root.Add(0, 2)
-	if errAdd != nil {
-		fmt.Println(errAdd)
-	}
-	errAdd = root.Add(0, 5)
-	if errAdd != nil {
-		fmt.Println(errAdd)
+	cs := woocommerce.NewNodeSourse()
+	nodes, err := catego.NewTree(cs)
+	if err != nil {
+		// catch err
 	}
 
-	errAdd = root.Add(1, 3)
-	if errAdd != nil {
-		fmt.Println(errAdd)
+	nodes.Add(catego.ID(1), catego.ID(0))
+	nodes.Add(catego.ID(2), catego.ID(0))
+	nodes.Add(catego.ID(3), catego.ID(0))
+	nodes.Add(catego.ID(4), catego.ID(0))
+
+	nodes.Add(catego.ID(31), catego.ID(1))
+	nodes.Add(catego.ID(41), catego.ID(1))
+
+	nodes.Add(catego.ID(21), catego.ID(5))
+
+	//nodes.Get(catego.ID(0))
+
+	fmt.Println(nodes.Get(catego.ID(1)))
+	childNode, _ := nodes.Get(catego.ID(1))
+	for _, val := range childNode.Children {
+		fmt.Println(val.ID)
 	}
-	errAdd = root.Add(1, 4)
-	if errAdd != nil {
-		fmt.Println(errAdd)
-	}
-
-	//root.Add(5, 22)
-	//root.Add(3, 9)
-
-	root.PrintInorder("-")
-
 }

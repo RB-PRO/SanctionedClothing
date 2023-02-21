@@ -6,7 +6,7 @@ require (
 	github.com/cheggaaa/pb v1.0.29
 	github.com/gocolly/colly v1.2.0
 	github.com/mdigger/translit v0.0.0-20190913173519-84222363843c
-	github.com/tgglv/wc-api-go v0.0.0-20190414172022-59f6f9e75c86
+	github.com/mrsinham/catego v1.1.1
 	github.com/xuri/excelize/v2 v2.7.0
 )
 
@@ -20,6 +20,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.3.1 // indirect
+	github.com/juju/errgo v0.0.0-20140925100237-08cceb5d0b53 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
@@ -36,5 +37,4 @@ require (
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	gopkg.in/mrsinham/catego.v1 v1.1.1 // indirect
 )
