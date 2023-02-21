@@ -55,7 +55,10 @@ func (root *Node) addNode(id int, refr string) error {
 		root.Children[id] = new(Node)
 	}
 
-	root.Children[id] = &Node{Children: map[int]*Node{}, Value: MeCat{Id: id}}
+	root.Children[id] = &Node{
+		Children: map[int]*Node{},
+		Value:    MeCat{Id: id}}
+
 	return nil
 }
 
