@@ -33,8 +33,7 @@ func (root *Node) Add(parentID, id int) error {
 	}
 
 	if parentID == 0 { // Для корневой категории
-
-		return root.addNode(id) // Добавить Категорию в потомка
+		return root.addNode(id, "1") // Добавить Категорию в потомка
 	}
 
 	// Ищем родительскую категори
@@ -43,18 +42,19 @@ func (root *Node) Add(parentID, id int) error {
 		return errorRoot
 	}
 
-	return findRoot.addNode(id) // Добавить Категорию в потомка
+	return findRoot.addNode(id, "2") // Добавить Категорию в потомка
 }
 
 // Выделение памяти/Добавление новой сторуктуры
-func (root *Node) addNode(id int) error {
+func (root *Node) addNode(id int, refr string) error {
 	if root == nil {
-		return errors.New("addNode: Node of nil")
+		return errors.New("addNode: Node of nil " + refr)
 	}
 
 	if root.Children[id] == nil {
 		root.Children[id] = new(Node)
 	}
+
 	root.Children[id] = &Node{Children: map[int]*Node{}, Value: MeCat{Id: id}}
 	return nil
 }
