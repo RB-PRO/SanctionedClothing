@@ -64,6 +64,31 @@ func Cats() {
 		if err != nil {
 			fmt.Println(err)
 		}
+		err = node.Add(3, 5)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = node.Add(3, 6)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = node.Add(4, 55)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = node.Add(4, 66)
+		if err != nil {
+			fmt.Println(err)
+		}
+		err = node.Add(66, 43234)
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		findNode, isFind := node.FindId(43234)
+		if isFind {
+			fmt.Println("!!", findNode.Id)
+		}
 
 		node.PrintInorder("-")
 		fmt.Println()

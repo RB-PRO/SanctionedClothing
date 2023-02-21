@@ -3,13 +3,12 @@ package woocommerce
 import (
 	"errors"
 	"fmt"
-	"strconv"
 )
 
 // Базовая структура данных
 type Node struct {
-	Value    MeCat         // Содержимое категории
-	Children map[int]*Node // Потомки категории
+	MeCat            // Содержимое категории
+	Children []*Node // Потомки категории
 }
 
 // Внутренняя структура данных
@@ -22,7 +21,7 @@ type MeCat struct {
 
 // Создать новый список категорий.
 func NewCategoryes() *Node {
-	return &Node{Children: map[int]*Node{}, Value: MeCat{Id: 0}}
+	return &Node{Children: []*Node{}, MeCat: MeCat{Id: 0}}
 
 }
 
@@ -33,52 +32,60 @@ func (root *Node) Add(parentID, id int) error {
 	}
 
 	if parentID == 0 { // Для корневой категории
-		return root.addNode(id, "1") // Добавить Категорию в потомка
+		return root.addNode(id) // Добавить Категорию в потомка
 	}
 
 	// Ищем родительскую категори
-	findRoot, errorRoot := root.FindId(parentID)
+	findRoot, errorRoot := root.find(parentID)
 	if errorRoot != nil {
 		return errorRoot
 	}
 
-	return findRoot.addNode(id, "2") // Добавить Категорию в потомка
+	return findRoot.addNode(id) // Добавить Категорию в потомка
 }
 
 // Выделение памяти/Добавление новой сторуктуры
-func (root *Node) addNode(id int, refr string) error {
+func (root *Node) addNode(id int) error {
 	if root == nil {
-		return errors.New("addNode: Node of nil " + refr)
+		return errors.New("addNode: Node of nil")
 	}
 
-	if root.Children[id] == nil {
-		root.Children[id] = new(Node)
-	}
-
-	root.Children[id] = &Node{
-		Children: map[int]*Node{},
-		Value:    MeCat{Id: id}}
+	root.Children = append(root.Children,
+		&Node{
+			Children: []*Node{},
+			MeCat:    MeCat{Id: id}})
 
 	return nil
 }
 
-// Поиска подкатегории по ID
-func (root *Node) FindId(id int) (*Node, error) {
-	for _, val := range root.Children { // Цикл по потомкам
-		if val != nil {
-			// Если была найдена подкатегория
-			if val.Value.Id == id {
-				return val, nil
-			}
+// Поиск подкатегории по ID. Доступно извне.
+// Возвращает ссылку на значение или его булево значение
+func (root *Node) FindId(id int) (*Node, bool) {
+	findNode, _ := root.find(id)
+	if findNode == nil {
+		return nil, false
+	}
+	return findNode, false
+}
 
-			// Ищем в дочерних подкатегориях
-			FindVal, valError := val.FindId(id)
-			if valError != nil {
-				return FindVal, nil
-			}
+// Поиска подкатегории по ID
+func (root *Node) find(id int) (*Node, error) {
+	if root == nil {
+		return nil, errors.New("FindId: Пустой объект")
+	}
+	for _, val := range root.Children { // Цикл по потомкам
+		// Если была найдена подкатегория
+		if val.Id == id {
+			return val, nil
+		}
+
+		// Ищем в дочерних подкатегориях
+		FindVal, valError := val.find(id)
+		if valError == nil {
+			return FindVal, nil
 		}
 	}
-	return nil, errors.New("не найден " + strconv.Itoa(id) + " id")
+	return nil, errors.New("FindId: не найден id")
 }
 
 // Вывод всех категорий
@@ -87,7 +94,7 @@ func (root *Node) PrintInorder(prefix string) {
 		return
 	}
 
-	fmt.Println(prefix, root.Value.Id)
+	fmt.Println(prefix, root.Id)
 	for _, val := range root.Children {
 		val.PrintInorder(prefix + "-")
 	}
