@@ -90,6 +90,11 @@ func Cats() {
 			fmt.Println("!!", findNode.Id)
 		}
 
+		err = node.Add(7, 3)
+		if err != nil {
+			fmt.Println(err)
+		}
+
 		node.PrintInorder("-")
 		fmt.Println()
 	}

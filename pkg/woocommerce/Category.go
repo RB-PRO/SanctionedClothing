@@ -3,6 +3,7 @@ package woocommerce
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // Базовая структура данных
@@ -58,16 +59,6 @@ func (root *Node) addNode(id int) error {
 	return nil
 }
 
-// Поиск подкатегории по ID. Доступно извне.
-// Возвращает ссылку на значение или его булево значение
-func (root *Node) FindId(id int) (*Node, bool) {
-	findNode, _ := root.find(id)
-	if findNode == nil {
-		return nil, false
-	}
-	return findNode, false
-}
-
 // Поиска подкатегории по ID
 func (root *Node) find(id int) (*Node, error) {
 	if root == nil {
@@ -77,15 +68,24 @@ func (root *Node) find(id int) (*Node, error) {
 		// Если была найдена подкатегория
 		if val.Id == id {
 			return val, nil
-		}
-
-		// Ищем в дочерних подкатегориях
-		FindVal, valError := val.find(id)
-		if valError == nil {
-			return FindVal, nil
+		} else { // Ищем в дочерних подкатегориях
+			FindVal, valError := val.find(id)
+			if valError == nil {
+				return FindVal, nil
+			}
 		}
 	}
-	return nil, errors.New("FindId: не найден id")
+	return nil, errors.New("FindId: не найден id " + strconv.Itoa(id))
+}
+
+// Поиск подкатегории по ID. Доступно извне.
+// Возвращает ссылку на значение или его булево значение
+func (root *Node) FindId(id int) (*Node, bool) {
+	findNode, errorFind := root.find(id)
+	if errorFind != nil {
+		return nil, false
+	}
+	return findNode, true
 }
 
 // Вывод всех категорий
