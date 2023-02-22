@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/woocommerce"
@@ -19,83 +18,22 @@ func RunWoocommerce() {
 		log.Fatalln(ok)
 	}
 
+	// Получить дерево категорий
 	plc, errPLC := userWC.ProductsCategories()
 	if errPLC != nil {
 		log.Fatalln(errPLC)
 	}
 
-	fmt.Println("len(plc)", len(plc.Category))
+	// Дерево категорий
+	NodeCategoryes := woocommerce.NewCategoryes()
 	for _, categ := range plc.Category {
-		if categ.Name == "one" {
-			fmt.Println(categ.ID, categ.Name, categ.Slug)
-			fmt.Printf("%+v", categ)
+		addingCategory := woocommerce.MeCat{
+			Id:   categ.ID,
+			Name: categ.Name,
+			Slug: categ.Slug,
 		}
-		if categ.Name == "two" {
-			fmt.Println(categ.ID, categ.Name, categ.Slug)
-			fmt.Printf("%+v", categ)
-		}
-		if categ.Name == "tree" {
-			fmt.Println(categ.ID, categ.Name, categ.Slug)
-			fmt.Printf("%+v", categ)
-		}
+		NodeCategoryes.Add(categ.Parent, addingCategory)
 	}
+	NodeCategoryes.PrintInorder("-") // печать категорий
 
-	//var cat woocommerce.MeCat
-
-}
-func Cats() {
-	for i := 0; i < 10; i++ {
-
-		node := woocommerce.NewCategoryes()
-		var err error
-		err = node.Add(0, 1)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = node.Add(0, 2)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = node.Add(1, 3)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = node.Add(1, 4)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = node.Add(3, 5)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = node.Add(3, 6)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = node.Add(4, 55)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = node.Add(4, 66)
-		if err != nil {
-			fmt.Println(err)
-		}
-		err = node.Add(66, 43234)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		findNode, isFind := node.FindId(43234)
-		if isFind {
-			fmt.Println("!!", findNode.Id)
-		}
-
-		err = node.Add(7, 3)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		node.PrintInorder("-")
-		fmt.Println()
-	}
 }

@@ -1,6 +1,7 @@
 package woocommerce
 
 import (
+	"bytes"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -39,7 +40,7 @@ func New(consumer_key, secret_key string) (*User, error) {
 //
 // [Orders]: http://woocommerce.github.io/woocommerce-rest-api-docs/?shell#orders
 func (user *User) IsOrder() error {
-	bodyBytes, errData := user.quering("GET", "/orders")
+	bodyBytes, errData := user.quering("GET", "/orders", nil)
 	if errData != nil {
 		return errData
 	}
@@ -58,14 +59,18 @@ func (user *User) IsOrder() error {
 // - methodURL - Метод GET, POST, PUT, ...
 // - methodSite - Метод API
 // - data - Массив byte с передаваемыми данным
-func (user *User) quering(methodURL, methodApi string) ([]byte, error) {
+func (user *User) quering(methodURL, methodApi string, data []byte) ([]byte, error) {
 	client := &http.Client{}
-	req, errReq := http.NewRequest(methodURL, URL+REQ+methodApi, nil)
+
+	req, errReq := http.NewRequest(methodURL, URL+REQ+methodApi, bytes.NewBuffer(data))
 	if errReq != nil {
 		return nil, errReq
 	}
 
 	req.Header.Add("Authorization", "Basic "+basicAuth(user.consumer_key, user.secret_key))
+	if data != nil {
+		req.Header.Add("Content-Type", "application/json")
+	}
 	res, errRes := client.Do(req)
 	if errRes != nil {
 		return nil, errRes
