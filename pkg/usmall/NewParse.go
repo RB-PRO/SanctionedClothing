@@ -4,6 +4,7 @@ package usmall
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -88,6 +89,8 @@ func Ware(code string) (WareUsmall, error) {
 		return WareUsmall{}, errIoReadAll
 	}
 
+	fmt.Println(string(body))
+
 	// Распарсить данные
 	responseErrorUnmarshal := json.Unmarshal(body, &WareUsmallRes)
 	if responseErrorUnmarshal != nil {
@@ -169,6 +172,8 @@ func CodeOfLink(link string) (string, error) {
 //
 //	WareUsmall > Product
 func WareInProduct2(product *bases.Product2, ware WareUsmall) {
+	// product.Cat
+
 	product.Name = ware.Name                // Название
 	product.FullName = ware.OriginName      // Полное название
 	product.Article = strconv.Itoa(ware.ID) // Артикул

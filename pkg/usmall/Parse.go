@@ -158,6 +158,7 @@ func LenPodSection(link string) int {
 func ParsePage(variety *bases.Variety2, link string) {
 	c := colly.NewCollector()
 	c.UserAgent = "Golang"
+	var i int
 
 	catalog, podcatalog, section, podsection := catalogsNames(URL + link)
 
@@ -166,11 +167,18 @@ func ParsePage(variety *bases.Variety2, link string) {
 		hrefLink, isHref := e.DOM.Attr("href")
 		if isHref {
 			variety.Product = append(variety.Product, bases.Product2{
-				Link:       hrefLink,
-				Catalog:    catalog,
-				PodCatalog: podcatalog,
-				Section:    section,
-				PodSection: podsection,
+				Link: hrefLink,
+				Cat:  bases.Cat{{catalog, ""}, {podcatalog, ""}, {section, ""}, {podsection, ""}},
+			})
+		}
+	})
+	// Поиск каталога
+	c.OnHTML("a[class='__img __fg']", func(e *colly.HTMLElement) {
+		hrefLink, isHref := e.DOM.Attr("href")
+		if isHref {
+			variety.Product = append(variety.Product, bases.Product2{
+				Link: hrefLink,
+				Cat:  bases.Cat{{catalog, ""}, {podcatalog, ""}, {section, ""}, {podsection, ""}},
 			})
 		}
 	})
@@ -190,9 +198,9 @@ func ParsePage(variety *bases.Variety2, link string) {
 		}
 	})
 
-	lenPS := LenPodSection(link)  // Всего страниц
-	bar := pb.StartNew(lenPS)     // Отслеживание прогресса
-	for i := 1; i <= lenPS; i++ { // Парсим
+	lenPS := LenPodSection(link) // Всего страниц
+	bar := pb.StartNew(lenPS)    // Отслеживание прогресса
+	for i = 1; i <= lenPS; i++ { // Парсим
 		bar.Increment() // Прибавляем 1 к отображению
 
 		time.Sleep(50 * time.Millisecond)

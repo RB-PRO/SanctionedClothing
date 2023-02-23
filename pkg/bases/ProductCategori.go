@@ -5,12 +5,19 @@ type Variety2 struct {
 	Product []Product2 // Массив продуктов
 }
 
+// Категория Name Slug
+type Cat [4]struct { // Категория товаров
+	Name string // Название подкатегории
+	Slug string // транслитом категория
+}
+
 // Структура товара
 type Product2 struct {
-	Catalog    string // Каталог: Женщины, Мужчины, Здоровье, Девочки, Мальчики
-	PodCatalog string // ПодКаталог: Одежда, Обувь, Сумки
-	Section    string // Верхняя одежда, Платья, Юбки
-	PodSection string // Шубы, Пуховики,Пальто
+	//Catalog    string // Каталог: Женщины, Мужчины, Здоровье, Девочки, Мальчики
+	//PodCatalog string // ПодКаталог: Одежда, Обувь, Сумки
+	//Section    string // Верхняя одежда, Платья, Юбки
+	//PodSection string // Шубы, Пуховики, Пальто
+	Cat // Подкатегория
 
 	Name         string // Название товара
 	FullName     string // Полное название товара
