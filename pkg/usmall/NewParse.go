@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
+	"github.com/gocolly/colly"
 )
 
 // Ссылка на сайт
@@ -166,6 +167,45 @@ func CodeOfLink(link string) (string, error) {
 	} else {
 		return linkStrs[0], nil
 	}
+}
+
+// Получить категорию товара
+//
+// Он же путь к товару
+func CatalogsCat(link string) (cat bases.Cat) {
+
+	c := colly.NewCollector()
+	c.UserAgent = "Golang"
+
+	c.OnHTML("nav[class='c-crumbs wrapper']", func(e *colly.HTMLElement) {
+		cat[0].Name = e.DOM.Find("span:nth-child(2) a").Text()
+		cat[0].Slug, _ = e.DOM.Find("span:nth-child(2) a").Attr("href")
+		cat[1].Name = e.DOM.Find("span:nth-child(3) a").Text()
+		cat[1].Slug, _ = e.DOM.Find("span:nth-child(3) a").Attr("href")
+		cat[2].Name = e.DOM.Find("span:nth-child(4) a").Text()
+		cat[2].Slug, _ = e.DOM.Find("span:nth-child(4) a").Attr("href")
+		cat[3].Name = e.DOM.Find("span:nth-child(5) a").Text()
+		cat[3].Slug, _ = e.DOM.Find("span:nth-child(5) a").Attr("href")
+		cat[0].Slug = lastSlush(cat[0].Slug)
+		cat[1].Slug = lastSlush(cat[1].Slug)
+		cat[2].Slug = lastSlush(cat[2].Slug)
+		cat[3].Slug = lastSlush(cat[3].Slug)
+	})
+	c.Visit(link)
+
+	return cat
+}
+
+// Конфертировать
+//
+//	/products/men/clothes/casual-jackets/levis
+//
+// в
+//
+//	levis
+func lastSlush(inputStr string) string {
+	inputsStrs := strings.Split(inputStr, "/")
+	return inputsStrs[len(inputsStrs)-1]
 }
 
 // Преобразовать результат работы API во внутреннюю структуру данных

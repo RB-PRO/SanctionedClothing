@@ -221,7 +221,7 @@ func catalogsNames(link string) (string, string, string, string) {
 		catalog = e.DOM.Find("span:nth-child(2) a").Text()
 		podcatalog = e.DOM.Find("span:nth-child(3) a").Text()
 		section = e.DOM.Find("span:nth-child(4) a").Text()
-		podsection = e.DOM.Find("span:nth-child(5) span").Text()
+		podsection = e.DOM.Find("span:nth-child(5) a").Text()
 	})
 	c.Visit(link)
 

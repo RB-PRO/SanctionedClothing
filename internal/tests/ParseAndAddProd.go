@@ -39,21 +39,42 @@ func TparseANDadd() {
 	}
 	NodeCategoryes.PrintInorder("-") // печать категорий
 
-	// Ссылка для теста:
+	// Ссылка на товар:
 	// https://usmall.ru/product/3252429-faux-fur-hooded-teddy-coat-max-studio
-	ProductNumber := "3252429"
-	ware, _ := usmall.Ware(ProductNumber) // Получить запрос с API
+	URL_product := "/product/3252429-faux-fur-hooded-teddy-coat-max-studio"
+	CatalogsCatUsmall := usmall.CatalogsCat(usmall.URL + URL_product) // Получить каталог товара
+	ProductNumber, _ := usmall.CodeOfLink(URL_product)                // Вычленить код товараw
+	ware, _ := usmall.Ware(ProductNumber)                             // Получить запрос с API
+
 	var variety bases.Variety2
 	variety.Product = make([]bases.Product2, 1) // выделить память
-	variety.Product[0].Cat[0].Name = "Женщины"
-	variety.Product[0].Cat[0].Slug = "women"
-	variety.Product[0].Cat[1].Name = "Одежда"
-	variety.Product[0].Cat[1].Slug = "clothes"
-	variety.Product[0].Cat[2].Name = "Пальто"
-	variety.Product[0].Cat[2].Slug = "wool-pea-coats"
-	variety.Product[0].Cat[3].Name = "Max Studio"
-	variety.Product[0].Cat[3].Slug = "max-studio"
-	usmall.WareInProduct2(&variety.Product[0], ware) // Преобразовать в домашнюю структуру
+	variety.Product[0].Cat = CatalogsCatUsmall  // Заполняем структуру категорий
 
-	fmt.Printf("%+v", variety.Product[0])
+	usmall.WareInProduct2(&variety.Product[0], ware) // Преобразовать в домашнюю структуру
+	var CatIDcreate int                              // ID новой или старой категории
+	for i := 0; i < 4; i++ {
+		findNode, findNodeBool := NodeCategoryes.FindSlug(variety.Product[0].Cat[i].Slug)
+		if !findNodeBool { // Если категория не добавлена
+			// То добавляем её в WC
+			cat := woocommerce.MeCat{
+				Name: variety.Product[0].Cat[i].Name,
+				Slug: variety.Product[0].Cat[i].Slug,
+			}
+			var ParentError error
+			CatIDcreate, ParentError = userWC.AddCat_WC(cat)
+			if ParentError != nil {
+				fmt.Println(ParentError)
+			}
+			// Добавляем в дерево категорий
+			NodeCategoryes.Add(0, woocommerce.MeCat{Id: CatIDcreate, ParentID: 0, Name: variety.Product[0].Cat[i].Name, Slug: variety.Product[0].Cat[i].Slug})
+		} else {
+			CatIDcreate = findNode.Id
+		}
+	}
+
+	fmt.Println("ID новой актуальной категории товара - ", CatIDcreate)
+	//fmt.Printf("%+v", variety.Product[0])
+
+	// Добавление товара
+
 }
