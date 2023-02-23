@@ -55,18 +55,23 @@ func TparseANDadd() {
 	for i := 0; i < 4; i++ {
 		findNode, findNodeBool := NodeCategoryes.FindSlug(variety.Product[0].Cat[i].Slug)
 		if !findNodeBool { // Если категория не добавлена
+
+			// Добавляем в дерево категорий
+			NodeCategoryes.Add(CatIDcreate, woocommerce.MeCat{Id: CatIDcreate, Name: variety.Product[0].Cat[i].Name, Slug: variety.Product[0].Cat[i].Slug})
+
 			// То добавляем её в WC
 			cat := woocommerce.MeCat{
-				Name: variety.Product[0].Cat[i].Name,
-				Slug: variety.Product[0].Cat[i].Slug,
+				Name:     variety.Product[0].Cat[i].Name,
+				Slug:     variety.Product[0].Cat[i].Slug,
+				ParentID: CatIDcreate,
 			}
+
 			var ParentError error
 			CatIDcreate, ParentError = userWC.AddCat_WC(cat)
 			if ParentError != nil {
 				fmt.Println(ParentError)
 			}
-			// Добавляем в дерево категорий
-			NodeCategoryes.Add(0, woocommerce.MeCat{Id: CatIDcreate, ParentID: 0, Name: variety.Product[0].Cat[i].Name, Slug: variety.Product[0].Cat[i].Slug})
+
 		} else {
 			CatIDcreate = findNode.Id
 		}
@@ -76,5 +81,9 @@ func TparseANDadd() {
 	//fmt.Printf("%+v", variety.Product[0])
 
 	// Добавление товара
-
+	prodWC := woocommerce.Product2ProductWC(variety.Product[0])
+	errorADD := userWC.AddProduct_WC(prodWC)
+	if errorADD != nil {
+		fmt.Println(errorADD)
+	}
 }

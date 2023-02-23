@@ -47,7 +47,7 @@ func (root *Node) Add(parentID int, MeStruct MeCat) error {
 	}
 
 	if parentID == 0 { // Для корневой категории
-		return root.addNode(MeStruct) // Добавить Категорию в потомка
+		return root.addNode(MeStruct, 0) // Добавить Категорию в потомка
 	}
 
 	// Ищем родительскую категори
@@ -56,14 +56,17 @@ func (root *Node) Add(parentID int, MeStruct MeCat) error {
 		return errorRoot
 	}
 
-	return findRoot.addNode(MeStruct) // Добавить Категорию в потомка
+	return findRoot.addNode(MeStruct, parentID) // Добавить Категорию в потомка
 }
 
 // Выделение памяти/Добавление новой сторуктуры
-func (root *Node) addNode(MeStruct MeCat) error {
+func (root *Node) addNode(MeStruct MeCat, parentID int) error {
 	if root == nil {
 		return errors.New("addNode: Node of nil")
 	}
+
+	// Зполняем родительскую строкутуру ID
+	MeStruct.ParentID = parentID
 
 	root.Children = append(root.Children,
 		&Node{

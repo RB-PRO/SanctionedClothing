@@ -4,7 +4,6 @@ package usmall
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -90,7 +89,7 @@ func Ware(code string) (WareUsmall, error) {
 		return WareUsmall{}, errIoReadAll
 	}
 
-	fmt.Println(string(body))
+	//fmt.Println(string(body))
 
 	// Распарсить данные
 	responseErrorUnmarshal := json.Unmarshal(body, &WareUsmallRes)

@@ -4,6 +4,7 @@ package woocommerce
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 )
@@ -21,6 +22,23 @@ type ProductWC struct {
 	Images []struct {
 		Src string `json:"src"`
 	} `json:"images"`
+
+	// Если ошибка
+	Code    string `json:"code"`
+	Message string `json:"message"`
+	Data    struct {
+		Status int `json:"status"`
+		Params struct {
+			Type string `json:"type"`
+		} `json:"params"`
+		Details struct {
+			Type struct {
+				Code    string      `json:"code"`
+				Message string      `json:"message"`
+				Data    interface{} `json:"data"`
+			} `json:"type"`
+		} `json:"details"`
+	} `json:"data"`
 }
 
 // Структура добавления товара
@@ -54,10 +72,15 @@ func (user *User) AddProduct_WC(ProdWC ProductWC) error {
 		return errors.New("AddProduct_WC: Не удалось распарсить ответ сервера: " + string(bodyBytes))
 	}
 
+	fmt.Println(string(bodyBytes))
+
 	// Если всё верно сработало и произошло добавление
 	return nil
 }
 func Product2ProductWC(prod bases.Product2) (prodWC ProductWC) {
-
+	prodWC.Name = prod.Name                   // Назвние товара
+	prodWC.ShortDescription = prod.FullName   // краткое описание товара
+	prodWC.Description = prod.Description.Rus // Описакние товара на Русском
+	prodWC.Type = "simple"                    // simple, grouped, external, variable и woosb.
 	return prodWC
 }
