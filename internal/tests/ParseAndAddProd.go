@@ -21,6 +21,13 @@ func TparseANDadd() {
 		log.Fatalln(ok)
 	}
 
+	// Получить тэги
+	tags, tagsError := userWC.AllTags_WC()
+	if tagsError != nil {
+		log.Fatalln(tagsError)
+	}
+	fmt.Println(tags)
+
 	// Получить дерево категорий
 	plc, errPLC := userWC.ProductsCategories()
 	if errPLC != nil {
@@ -66,6 +73,7 @@ func TparseANDadd() {
 				ParentID: CatIDcreate,
 			}
 
+			// Добавить категорию на WP
 			var ParentError error
 			CatIDcreate, ParentError = userWC.AddCat_WC(cat)
 			if ParentError != nil {
@@ -80,9 +88,12 @@ func TparseANDadd() {
 	fmt.Println("ID новой актуальной категории товара - ", CatIDcreate)
 	//fmt.Printf("%+v", variety.Product[0])
 
+	tagId := woocommerce.FindIdTagSlug(tags, variety.Product[0].GenderLabel)
+
+	fmt.Println("tagId", tagId)
 	// Добавление товара
-	prodWC := woocommerce.Product2ProductWC(variety.Product[0])
-	errorADD := userWC.AddProduct_WC(prodWC)
+	prodWC := woocommerce.Product2ProductWC(variety.Product[0], CatIDcreate, tagId) // конфертирование товара
+	errorADD := userWC.AddProduct_WC(prodWC)                                        // Добавляем товар
 	if errorADD != nil {
 		fmt.Println(errorADD)
 	}

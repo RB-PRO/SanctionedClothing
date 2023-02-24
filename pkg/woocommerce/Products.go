@@ -4,7 +4,6 @@ package woocommerce
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 )
@@ -19,10 +18,17 @@ type ProductWC struct {
 	Categories       []struct {
 		ID int `json:"id"`
 	} `json:"categories"`
+	Tags []struct { // List of tags. See Product - Tags properties - http://woocommerce.github.io/woocommerce-rest-api-docs/?shell#product-tags-properties
+		ID int `json:"id"`
+	} `json:"tag"`
+
 	Images []struct {
 		Src string `json:"src"`
 	} `json:"images"`
+}
 
+// Структура добавления товара
+type ProductWC_Response struct {
 	// Если ошибка
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -39,10 +45,6 @@ type ProductWC struct {
 			} `json:"type"`
 		} `json:"details"`
 	} `json:"data"`
-}
-
-// Структура добавления товара
-type ProductWC_Response struct {
 }
 
 // Метод [products] поможет Вам добавить товар
@@ -72,15 +74,26 @@ func (user *User) AddProduct_WC(ProdWC ProductWC) error {
 		return errors.New("AddProduct_WC: Не удалось распарсить ответ сервера: " + string(bodyBytes))
 	}
 
-	fmt.Println(string(bodyBytes))
+	//fmt.Println(string(bodyBytes))
 
 	// Если всё верно сработало и произошло добавление
 	return nil
 }
-func Product2ProductWC(prod bases.Product2) (prodWC ProductWC) {
+func Product2ProductWC(prod bases.Product2, CatIDcreate, tagId int) (prodWC ProductWC) {
 	prodWC.Name = prod.Name                   // Назвние товара
 	prodWC.ShortDescription = prod.FullName   // краткое описание товара
 	prodWC.Description = prod.Description.Rus // Описакние товара на Русском
 	prodWC.Type = "simple"                    // simple, grouped, external, variable и woosb.
+
+	// Категория
+	prodWC.Categories = []struct {
+		ID int "json:\"id\""
+	}{{CatIDcreate}}
+
+	// Метка
+	prodWC.Tags = []struct {
+		ID int "json:\"id\""
+	}{{tagId}}
+
 	return prodWC
 }

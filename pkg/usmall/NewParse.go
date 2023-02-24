@@ -217,6 +217,7 @@ func WareInProduct2(product *bases.Product2, ware WareUsmall) {
 	product.FullName = ware.OriginName      // Полное название
 	product.Article = strconv.Itoa(ware.ID) // Артикул
 	product.Manufacturer = ware.Brand.Name  // Производитель
+	product.GenderLabel = ware.GenderLabel  // tag
 
 	product.Description.Eng = ware.OriginDescription // Описание на английском
 	product.Description.Rus = ware.Description       // Описание на русском

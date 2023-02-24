@@ -25,6 +25,9 @@ type Product2 struct {
 	Article      string // Артикул
 	Manufacturer string // Производитель
 
+	// Используется для tag
+	GenderLabel string
+
 	Size []string // Все возможные размеры
 
 	Description struct { // Описание товара
