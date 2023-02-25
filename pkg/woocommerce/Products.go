@@ -83,7 +83,7 @@ func Product2ProductWC(prod bases.Product2, CatIDcreate, tagId int) (prodWC Prod
 	prodWC.Name = prod.Name                   // Назвние товара
 	prodWC.ShortDescription = prod.FullName   // краткое описание товара
 	prodWC.Description = prod.Description.Rus // Описакние товара на Русском
-	prodWC.Type = "simple"                    // simple, grouped, external, variable и woosb.
+	prodWC.Type = "variable"                  // simple, grouped, external, variable и woosb.
 
 	// Категория
 	prodWC.Categories = []struct {
