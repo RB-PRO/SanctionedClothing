@@ -37,6 +37,49 @@ func ParsePage(link string, page int) (prod []bases.Product2) {
 	return prod
 }
 
+// Пропасить стрицу с товарами
+func ParsePageWithVarienty(varient bases.Variety2, link string, page int) bases.Variety2 {
+	var TecalName string             // Текущее имя, используемое для осозначения цветов
+	LenProds := len(varient.Product) // Получаем к-во товаров
+	if LenProds != 0 {
+		TecalName = varient.Product[LenProds-1].Name
+	}
+	c := colly.NewCollector()
+
+	// Поиск и добавление самой ссылки на товар
+	c.OnHTML("article[class='qda-z']", func(e *colly.HTMLElement) {
+		LenProds := len(varient.Product)                                  // Получаем к-во товаров
+		link, ErrorAttrLink := e.DOM.Find("a[class='OP-z']").Attr("href") // Получить ссылку на товар
+		if ErrorAttrLink {
+			name := e.DOM.Find("dd[class='SP-z']").Text()  // Название товара
+			color := e.DOM.Find("dd[class='UP-z']").Text() // Получить цвет товара
+			color = formingColorEng(color)                 // Преобразовать в ссылку
+
+			// Если нужно дозаписать подтовар
+			if TecalName == name {
+				FindIdInt, FindIdError := FindFirstNameProducts(varient.Product, "name")
+				if FindIdError != nil { // Если не найден такой товар по имени
+					varient.Product[LenProds-1].Item[color] = bases.ProdParam{Link: link, ColorEng: color}
+				} else { // Если найден такой ID товара
+					varient.Product[FindIdInt].Item[color] = bases.ProdParam{Link: link, ColorEng: color}
+				}
+			} else { // Если нужно создать новый товар
+				// Добавляем такой товар
+				varient.Product = append(varient.Product, bases.Product2{
+					Name: name,
+					Link: link,
+					Item: make(map[string]bases.ProdParam),
+				})
+				// Добавляем подтовар
+				varient.Product[LenProds].Item[color] = bases.ProdParam{Link: link, ColorEng: color}
+			}
+		}
+
+	})
+	c.Visit(URL + link + "&p=" + strconv.Itoa(page))
+	return varient
+}
+
 // Получить все страницы с товарами на сайте
 func AllPages(link string) (pages int) {
 	c := colly.NewCollector()

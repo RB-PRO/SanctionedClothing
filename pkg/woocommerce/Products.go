@@ -25,10 +25,7 @@ type ProductWC struct {
 	Images []struct {
 		Src string `json:"src"`
 	} `json:"images"`
-}
 
-// Структура добавления товара
-type ProductWC_Response struct {
 	// Если ошибка
 	Code    string `json:"code"`
 	Message string `json:"message"`
@@ -68,7 +65,7 @@ func (user *User) AddProduct_WC(ProdWC ProductWC) error {
 	}
 
 	// Получить ответ
-	var ProductWC_Resp ProductWC_Response
+	var ProductWC_Resp ProductWC
 	errUnmarshal := json.Unmarshal(bodyBytes, &ProductWC_Resp)
 	if errUnmarshal != nil { // Если ошибка распарсивания в структуру данных
 		return errors.New("AddProduct_WC: Не удалось распарсить ответ сервера: " + string(bodyBytes))

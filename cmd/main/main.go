@@ -11,5 +11,6 @@ func main() {
 	//app.Cats()
 
 	//tests.TparseANDadd()
-	tests.Run_pm6()
+	//tests.Run_pm6()
+	tests.Run_pm6_adventing_Sortered()
 }
