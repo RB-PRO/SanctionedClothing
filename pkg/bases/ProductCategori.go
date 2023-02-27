@@ -38,15 +38,15 @@ type Product2 struct {
 	// Описание товара по значению "цвет"
 	// "Цвет" будет определять, как вариацию товара
 	// "Цвет на русском"
-	Item map[string]ProdParam
+	Item           map[string]ProdParam
+	Specifications map[string]string // Остальные характеристики
 }
 
 // Структура параметров товара
 type ProdParam struct {
-	Link           string            // Ссылка на товар нужного цвета
-	ColorEng       string            // Цвет на английском
-	Price          float64           // Цена
-	Size           []string          // Размеры
-	Image          []string          // Картинки
-	Specifications map[string]string // Остальные характеристики
+	Link     string   // Ссылка на товар нужного цвета
+	ColorEng string   // Цвет на английском
+	Price    float64  // Цена
+	Size     []string // Размеры
+	Image    []string // Картинки
 }

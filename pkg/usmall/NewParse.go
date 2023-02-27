@@ -221,6 +221,7 @@ func WareInProduct2(product *bases.Product2, ware WareUsmall) {
 
 	product.Description.Eng = ware.OriginDescription // Описание на английском
 	product.Description.Rus = ware.Description       // Описание на русском
+	product.Specifications = make(map[string]string)
 
 	// product.Image = make(map[string][]string) // Выделить память в мапу
 
@@ -233,9 +234,8 @@ func WareInProduct2(product *bases.Product2, ware WareUsmall) {
 		if _, ok := product.Item[colorKey]; !ok {
 			// То выделяем память в данные соответственно
 			product.Item[colorKey] = bases.ProdParam{
-				Image:          make([]string, 0),
-				Size:           make([]string, 0),
-				Specifications: make(map[string]string),
+				Image: make([]string, 0),
+				Size:  make([]string, 0),
 			}
 			//product.Item[colorKey].Image = make([]string, 0)
 			//product.Item[colorKey].Size = make([]string, 0)

@@ -10,5 +10,6 @@ func main() {
 	//app.RunWoocommerce()
 	//app.Cats()
 
-	tests.TparseANDadd()
+	//tests.TparseANDadd()
+	tests.Run_pm6()
 }
