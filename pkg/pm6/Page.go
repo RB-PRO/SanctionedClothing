@@ -1,6 +1,7 @@
 package pm6
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -23,7 +24,7 @@ func ParsePage(link string, page int) (prod []bases.Product2) {
 		link, ErrorAttrLink := e.DOM.Find("a[class='OP-z']").Attr("href") // Получить ссылку на товар
 		if ErrorAttrLink {
 			color := e.DOM.Find("dd[class='UP-z']").Text() // Получить цвет товара
-			color = formingColorEng(color)                 // Преобразовать в ссылку
+			color = bases.FormingColorEng(color)           // Преобразовать в ссылку
 			prod = append(prod, bases.Product2{
 				Link: link,
 				Name: e.DOM.Find("dd[class='SP-z']").Text(),
@@ -51,10 +52,12 @@ func ParsePageWithVarienty(varient bases.Variety2, link string, page int) bases.
 		LenProds := len(varient.Product)                                  // Получаем к-во товаров
 		link, ErrorAttrLink := e.DOM.Find("a[class='OP-z']").Attr("href") // Получить ссылку на товар
 		if ErrorAttrLink {
-			name := e.DOM.Find("dd[class='SP-z']").Text()  // Название товара
-			color := e.DOM.Find("dd[class='UP-z']").Text() // Получить цвет товара
-			color = formingColorEng(color)                 // Преобразовать в ссылку
+			name := e.DOM.Find("dd[class='SP-z']").Text() // Название товара
 
+			color := e.DOM.Find("dd[class='UP-z']").Text() // Получить цвет товара
+			color = bases.FormingColorEng(color)           // Преобразовать в ссылку
+
+			//fmt.Println(">"+TecalName+"<", ">"+name+"<")
 			// Если нужно дозаписать подтовар
 			if TecalName == name {
 				FindIdInt, FindIdError := FindFirstNameProducts(varient.Product, "name")
@@ -73,10 +76,11 @@ func ParsePageWithVarienty(varient bases.Variety2, link string, page int) bases.
 				// Добавляем подтовар
 				varient.Product[LenProds].Item[color] = bases.ProdParam{Link: link, ColorEng: color}
 			}
+			TecalName = name
 		}
-
 	})
 	c.Visit(URL + link + "&p=" + strconv.Itoa(page))
+	fmt.Println(URL + link + "&p=" + strconv.Itoa(page))
 	return varient
 }
 

@@ -27,24 +27,35 @@ func Run_pm6() {
 func Run_pm6_adventing_Sortered() {
 	linkPages := "/null/.zso?s=brandNameFacetLC/asc/productName/asc/" // Ссылка на страницу товаров
 	pagesInt := pm6.AllPages(linkPages)                               // Получить сколько всего страниц товаров есть
-	pagesInt = 3
+	pagesInt = 2
 
 	var varient bases.Variety2                                 // Массив базы данных товаров
-	varient = pm6.ParsePageWithVarienty(varient, linkPages, 1) // Парсим первую страницу товаров
-	for i := 2; i <= pagesInt; i++ {                           // Цикл по всем страницам товаров
+	varient = pm6.ParsePageWithVarienty(varient, linkPages, 0) // Парсим первую страницу товаров
+	for i := 1; i <= pagesInt; i++ {                           // Цикл по всем страницам товаров
+		fmt.Println(i, "/", pagesInt)
 		// Сортируем товары и записываем их в готовую базу данных varient
 		varient = pm6.ParsePageWithVarienty(varient, linkPages, i) // Парсим первую страницу товаров
 
-		//AddProducts = append(AddProducts, pm6.ParsePage(linkPages, i)...) // Собираем массив товаров
+		for j := 0; j < len(varient.Product); j++ {
+			fmt.Println(">>", j, "/", len(varient.Product))
+			if varient.Product[j].Manufacturer == "" {
+				for key := range varient.Product[j].Item {
+					//fmt.Println("parse", varient.Product[j].Item[key].Link)
+					pm6.ParseProduct(&varient.Product[j], varient.Product[j].Item[key].Link)
+				}
 
-		//varient.Product = append(varient.Product, AddProducts...) // Добавляем в исходный массив товаров
+			}
+		}
 	}
+
+	varient.SaveXlsxCsvs("TEST")
+
 	fmt.Println("len", len(varient.Product))
 	for index, value := range varient.Product {
 		strs := ""
 		for key := range value.Item {
-			strs += key + " "
+			strs += key + ", "
 		}
-		fmt.Println(index, ":", value.Name, "color:", strs)
+		fmt.Println(index, ":", ">"+value.Name+"<", "color:", strs)
 	}
 }

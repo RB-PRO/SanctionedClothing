@@ -21,7 +21,13 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	// Создаём структуру цвета
 	c.OnHTML("span[class='NU-z']", func(e *colly.HTMLElement) {
 		tecalColor = e.Text
-		prod.Item[tecalColor] = bases.ProdParam{ColorEng: formingColorEng(tecalColor)}
+		tecalColor = bases.FormingColorEng(tecalColor)
+		fmt.Println("tecalColor", ">"+tecalColor+"<")
+		for key := range prod.Item {
+			fmt.Println(">" + key + "<")
+		}
+		prod.Item[tecalColor] = bases.ProdParam{ColorEng: tecalColor}
+		prod.Specifications = make(map[string]string)
 	})
 
 	// Артикул, описание товара
@@ -56,8 +62,9 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 		}
 	})
 
-	// Размеры товара
-	c.OnHTML("div[class='Jqa-z'] input", func(e *colly.HTMLElement) {
+	// Размеры товара dpa-z epa-z
+	c.OnHTML("div[class='dpa-z epa-z'] div[class^='Jqa-z'] input", func(e *colly.HTMLElement) {
+		fmt.Println(e.DOM.Text())
 		if attr, ok := e.DOM.Attr("data-label"); ok { // Если такой атрибут существует
 			if entry, ok := prod.Item[tecalColor]; ok {
 				entry.Size = append(entry.Size, attr)
@@ -157,26 +164,19 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 		}
 	})
 
-	fmt.Println(URL + ProductColorLink)
+	fmt.Println("Product.go", URL+ProductColorLink)
 	c.Visit(URL + ProductColorLink)
 
 }
 
 // Перевести /sweaters/CKvXARDQ1wHiAgIBAg.zso в sweaters
 func formSlump(input string, selection int) (output string) {
+	input = strings.ReplaceAll(input, ":", "")
 	strs := strings.Split(input, "/")
 	if len(strs) >= selection+1 {
 		return strs[selection]
 	}
 	return ""
-}
-
-// Перевести /sweaters/CKvXARDQ1wHiAgIBAg.zso в sweaters
-func formingColorEng(input string) (output string) {
-	output = strings.ReplaceAll(input, " ", "-")
-	output = strings.ReplaceAll(input, "'", "")
-	output = strings.ToLower(output)
-	return output
 }
 
 // Распечатать продукт

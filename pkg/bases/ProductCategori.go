@@ -1,5 +1,7 @@
 package bases
 
+import "strings"
+
 // Структура массива товаров
 type Variety2 struct {
 	Product []Product2 // Массив продуктов
@@ -49,4 +51,13 @@ type ProdParam struct {
 	Price    float64  // Цена
 	Size     []string // Размеры
 	Image    []string // Картинки
+}
+
+// Перевести /sweaters/CKvXARDQ1wHiAgIBAg.zso в sweaters
+func FormingColorEng(input string) (output string) {
+	output = strings.ReplaceAll(input, " ", "-")
+	output = strings.ReplaceAll(input, "'", "")
+	output = strings.ReplaceAll(input, "/", "_")
+	output = strings.ToLower(output)
+	return output
 }
