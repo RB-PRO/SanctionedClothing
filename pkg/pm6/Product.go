@@ -19,13 +19,13 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	var tecalColor string // Цвет текущей страницы
 
 	// Создаём структуру цвета
-	c.OnHTML("form[id='buyBoxForm'] div div span:last-of-type", func(e *colly.HTMLElement) {
-		tecalColor = e.Text
+	c.OnHTML("div[id='buyBox'] form[id='buyBoxForm']", func(e *colly.HTMLElement) {
+
+		tecalColor = e.DOM.Find("div div span:last-of-type").Text()
 		tecalColor = bases.FormingColorEng(tecalColor)
-		fmt.Println("tecalColor", ">"+tecalColor+"<")
-		for key := range prod.Item {
-			fmt.Println(">" + key + "<")
-		}
+
+		fmt.Println("tecalColor", tecalColor)
+
 		prod.Item[tecalColor] = bases.ProdParam{ColorEng: tecalColor}
 		prod.Specifications = make(map[string]string)
 	})
@@ -119,25 +119,35 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	})
 
 	// Полное название товара, оно же краткое описание товара
-	c.OnHTML("div[role='region'] ul li:first-of-type", func(e *colly.HTMLElement) {
+	c.OnHTML("div[role='region'] ul:first-of-type li[class]:first-of-type", func(e *colly.HTMLElement) {
 		prod.FullName = e.DOM.Text()
 	})
 
 	// Ссылка на товар
-	c.OnHTML("meta[itemprop=url]", func(e *colly.HTMLElement) {
-		prod.Link, _ = e.DOM.Attr("content")
-		if entry, oks := prod.Item[tecalColor]; oks { // То добавляем его
-			entry.Link = prod.Link
-			prod.Item[tecalColor] = entry
+	c.OnHTML("div[itemprop=offers] meta[itemprop=url]", func(e *colly.HTMLElement) {
+		if link, linkFind := e.DOM.Attr("content"); linkFind {
+			prod.Link = link // Записать ссылку в продукт
+			fmt.Println(tecalColor)
+			// Если есть такой
+			if entry, oks := prod.Item[tecalColor]; oks { // То добавляем его
+				entry.Link = link
+				prod.Item[tecalColor] = entry
+			}
 		}
 	})
+
 	// Гендер товара
-	c.OnHTML("span[class=hpa-z]", func(e *colly.HTMLElement) {
-		prod.GenderLabel = e.DOM.Text()                                          // Получить текст
-		prod.GenderLabel = strings.ReplaceAll(prod.GenderLabel, "'s Sizes:", "") // Удалить лишнее из гендера
-		prod.Cat[0].Name = prod.GenderLabel                                      // Название главной категории товара
-		prod.GenderLabel = strings.ToLower(prod.GenderLabel)                     // Понизить регистр
-		prod.Cat[0].Slug = prod.GenderLabel                                      // Название главной ссылки категории товара
+	c.OnHTML("form[id=buyBoxForm] div fieldset", func(e *colly.HTMLElement) {
+		// В блоке размеров есть тег legend с аттрибутом id="sizingChooser"
+		if _, isFind := e.DOM.Find("legend").Attr("id"); isFind {
+			textSize := e.DOM.Find("legend span").Text()
+			textSize = strings.ReplaceAll(textSize, "'s Sizes:", "") // Удалить лишнее из гендера
+			prod.Cat[0].Name = GenderBook(textSize)                  // Название главной категории товара
+			textSize = strings.ToLower(textSize)                     // Понизить регистр
+			prod.Cat[0].Slug = textSize                              // Название главной ссылки категории товара
+			prod.GenderLabel = textSize                              // Заполнить гендер
+
+		}
 	})
 
 	// Цена
@@ -171,6 +181,7 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	fmt.Println("Product.go", URL+ProductColorLink)
 	c.Visit(URL + ProductColorLink)
 
+	prod.Link = ProductColorLink
 }
 
 // Перевести /sweaters/CKvXARDQ1wHiAgIBAg.zso в sweaters
@@ -205,4 +216,22 @@ func PrintItems(items map[string]bases.ProdParam) (output string) {
 			"\tКартинка: " + strings.Join(val.Image, ",") + "\n"
 	}
 	return output
+}
+
+// Словарь, который используется для Name в GenderLabel
+// и
+// роидетльской категории. Например Женщины/woman
+//
+//	Функция принимает Woman[или]woman, а отдаёт Женщины
+func GenderBook(key string) string {
+	keyLower := strings.ToLower(key) // Сделать нижний шрифт
+	switch keyLower {
+	case "women":
+		return "Женщины"
+	case "man":
+		return "Мужчины"
+
+	default:
+		return key
+	}
 }

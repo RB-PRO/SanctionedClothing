@@ -15,15 +15,11 @@ type Cat [4]struct { // Категория товаров
 
 // Структура товара
 type Product2 struct {
-	//Catalog    string // Каталог: Женщины, Мужчины, Здоровье, Девочки, Мальчики
-	//PodCatalog string // ПодКаталог: Одежда, Обувь, Сумки
-	//Section    string // Верхняя одежда, Платья, Юбки
-	//PodSection string // Шубы, Пуховики, Пальто
 	Cat // Подкатегория
 
 	Name         string // Название товара
 	FullName     string // Полное название товара
-	Link         string // ССсылка на товар базового цвета
+	Link         string // Сссылка на товар базового цвета
 	Article      string // Артикул
 	Manufacturer string // Производитель
 
@@ -55,9 +51,9 @@ type ProdParam struct {
 
 // Перевести /sweaters/CKvXARDQ1wHiAgIBAg.zso в sweaters
 func FormingColorEng(input string) (output string) {
-	output = strings.ReplaceAll(input, " ", "-")
-	output = strings.ReplaceAll(input, "'", "")
-	output = strings.ReplaceAll(input, "/", "_")
-	output = strings.ToLower(output)
+	input = strings.ReplaceAll(input, " ", "-")
+	input = strings.ReplaceAll(input, "'", "")
+	input = strings.ReplaceAll(input, "/", "_")
+	output = strings.ToLower(input)
 	return output
 }
