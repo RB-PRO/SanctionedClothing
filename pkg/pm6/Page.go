@@ -48,19 +48,19 @@ func ParsePageWithVarienty(varient bases.Variety2, link string, page int) bases.
 	c := colly.NewCollector()
 
 	// Поиск и добавление самой ссылки на товар
-	c.OnHTML("article[class='qda-z']", func(e *colly.HTMLElement) {
-		LenProds := len(varient.Product)                                  // Получаем к-во товаров
-		link, ErrorAttrLink := e.DOM.Find("a[class='OP-z']").Attr("href") // Получить ссылку на товар
+	c.OnHTML("div[id=products] article", func(e *colly.HTMLElement) {
+		LenProds := len(varient.Product)                                   // Получаем к-во товаров
+		link, ErrorAttrLink := e.DOM.Find("a[tabindex='-1']").Attr("href") // Получить ссылку на товар
 		if ErrorAttrLink {
-			name := e.DOM.Find("dd[class='SP-z']").Text() // Название товара
+			name := e.DOM.Find("dd[itemprop='name']").Text() // Название товара
 
-			color := e.DOM.Find("dd[class='UP-z']").Text() // Получить цвет товара
-			color = bases.FormingColorEng(color)           // Преобразовать в ссылку
+			color := e.DOM.Find("dd[itemprop='color']").Text() // Получить цвет товара
+			color = bases.FormingColorEng(color)               // Преобразовать в ссылку
 
 			//fmt.Println(">"+TecalName+"<", ">"+name+"<")
 			// Если нужно дозаписать подтовар
 			if TecalName == name {
-				FindIdInt, FindIdError := FindFirstNameProducts(varient.Product, "name")
+				FindIdInt, FindIdError := FindFirstNameProducts(varient.Product, name)
 				if FindIdError != nil { // Если не найден такой товар по имени
 					varient.Product[LenProds-1].Item[color] = bases.ProdParam{Link: link, ColorEng: color}
 				} else { // Если найден такой ID товара

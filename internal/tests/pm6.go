@@ -27,7 +27,7 @@ func Run_pm6() {
 func Run_pm6_adventing_Sortered() {
 	linkPages := "/null/.zso?s=brandNameFacetLC/asc/productName/asc/" // Ссылка на страницу товаров
 	pagesInt := pm6.AllPages(linkPages)                               // Получить сколько всего страниц товаров есть
-	pagesInt = 2
+	pagesInt = 0
 
 	var varient bases.Variety2                                 // Массив базы данных товаров
 	varient = pm6.ParsePageWithVarienty(varient, linkPages, 0) // Парсим первую страницу товаров
@@ -51,11 +51,13 @@ func Run_pm6_adventing_Sortered() {
 	varient.SaveXlsxCsvs("TEST")
 
 	fmt.Println("len", len(varient.Product))
-	for index, value := range varient.Product {
-		strs := ""
-		for key := range value.Item {
-			strs += key + ", "
+	/*
+		for index, value := range varient.Product {
+			strs := ""
+			for key := range value.Item {
+				strs += key + ", "
+			}
+			fmt.Println(index, ":", ">"+value.Name+"<", "color:", strs)
 		}
-		fmt.Println(index, ":", ">"+value.Name+"<", "color:", strs)
-	}
+	*/
 }

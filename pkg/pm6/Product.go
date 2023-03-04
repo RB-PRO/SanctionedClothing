@@ -19,7 +19,7 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	var tecalColor string // Цвет текущей страницы
 
 	// Создаём структуру цвета
-	c.OnHTML("span[class='NU-z']", func(e *colly.HTMLElement) {
+	c.OnHTML("form[id='buyBoxForm'] div div span:last-of-type", func(e *colly.HTMLElement) {
 		tecalColor = e.Text
 		tecalColor = bases.FormingColorEng(tecalColor)
 		fmt.Println("tecalColor", ">"+tecalColor+"<")
@@ -30,13 +30,13 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 		prod.Specifications = make(map[string]string)
 	})
 
-	// Артикул, описание товара
+	// Артикул
+	c.OnHTML("div[role='region'] span[itemprop='sku']", func(e *colly.HTMLElement) {
+		prod.Article = e.DOM.Text()
+	})
+
+	// описание товара
 	c.OnHTML("div[role='region'] ul li", func(e *colly.HTMLElement) {
-		// Если это Артикул. В классер артикула всегда стоит "OR-z"
-		if e.Attr("class") == "OR-z" {
-			prod.Article = e.DOM.Find("span").Text()
-			return
-		}
 
 		if strings.Contains(e.DOM.Text(), "Measurements:") {
 			// Обработка дополнительных полей
@@ -59,6 +59,7 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 			KeyValStr[0] = strings.TrimSpace(KeyValStr[0])
 			KeyValStr[1] = strings.TrimSpace(KeyValStr[1])
 			prod.Specifications[KeyValStr[0]] = KeyValStr[1]
+
 		}
 	})
 
@@ -112,9 +113,16 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	})
 
 	// Название Товара
-	c.OnHTML("span[class=yn-z]", func(e *colly.HTMLElement) {
+	c.OnHTML("div[id='productRecap'] div div div div h1 div span:last-of-type", func(e *colly.HTMLElement) {
+		//c.OnHTML("meta[itemprop=name]", func(e *colly.HTMLElement) {
 		prod.Name = e.DOM.Text()
 	})
+
+	// Полное название товара, оно же краткое описание товара
+	c.OnHTML("div[role='region'] ul li:first-of-type", func(e *colly.HTMLElement) {
+		prod.FullName = e.DOM.Text()
+	})
+
 	// Ссылка на товар
 	c.OnHTML("meta[itemprop=url]", func(e *colly.HTMLElement) {
 		prod.Link, _ = e.DOM.Attr("content")
@@ -122,10 +130,6 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 			entry.Link = prod.Link
 			prod.Item[tecalColor] = entry
 		}
-	})
-	// Полное название товара, оно же краткое описание товара
-	c.OnHTML("li[class=LR-z]", func(e *colly.HTMLElement) {
-		prod.FullName = e.DOM.Text()
 	})
 	// Гендер товара
 	c.OnHTML("span[class=hpa-z]", func(e *colly.HTMLElement) {

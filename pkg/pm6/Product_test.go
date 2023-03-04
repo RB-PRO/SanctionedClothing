@@ -1,7 +1,6 @@
 package pm6
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
@@ -15,20 +14,34 @@ func TestParseProduct(t *testing.T) {
 	prod.Specifications = make(map[string]string)
 	link := "/p/1-state-balloon-sleeve-crew-neck-sweater-wild-oak/product/9621708/color/836781"
 	ParseProduct(&prod, link)
-	if prod.Article != "9621708" {
-		t.Error("Неправильный артикул. Должно быть \"9621708\", а получено " + "\"" + prod.Article + "\"")
+
+	// Артикул
+	answerArcticle := "9621708"
+	if prod.Article != answerArcticle {
+		t.Error("Неправильный артикул. Article. Должно быть \"" + answerArcticle + "\", а получено " + "\"" + prod.Article + "\"")
 	}
 
-	// Тест размера майки ребёнка
-	var prod2 bases.Product2
-	prod2.Item = make(map[string]bases.ProdParam)
-	prod2.Specifications = make(map[string]string)
-	link = "/p/4kids-essential-high-low-tank-top-little-kids-big-kids-navy/product/9450063/color/9"
-	ParseProduct(&prod2, link)
-	t.Log(PrintProduct2(prod2))
-	if itemColors, ok := prod2.Item["navy"]; ok {
-		if itemColors.Size[0] != "XS" || itemColors.Size[1] != "SM" {
-			t.Error("Неправильные размеры для " + URL + link + " получено " + strings.Join(itemColors.Size, ",") + ", а должно быть XS,SM")
-		}
+	// Название товара
+	if prod.Name != "Balloon Sleeve Crew Neck Sweater" {
+		t.Error("Неправильное поленое название товара. Name. Должно быть \"Balloon Sleeve Crew Neck Sweater\", а получено " + "\"" + prod.Name + "\"")
 	}
+	// Полное название товара
+	answerFullName := "Complete your cool-weather look with the soft and cozy 1.STATE™ Balloon Sleeve Crew Neck Sweater."
+	if prod.FullName != answerFullName {
+		t.Error("Неправильное полное название товара. FullName. Должно быть \"" + answerFullName + "\", а получено " + "\"" + prod.FullName + "\"")
+	}
+
+	// Категории
+	answerCat := bases.Cat{{"Женщины", "woman"}, {"Clothing", "clothing"}, {"Sweaters", "sweaters"}, {"1.STATE", "1-state"}}
+	if prod.Cat != answerCat {
+		t.Error("Неправильно получены категории товаров. Cat. Должно быть \"", answerCat, "\", а получено "+"\"", prod.Cat, "\"")
+	}
+
+	// Прочие аттрибуты
+	if prod.Specifications["Length"] != "23 in" {
+		t.Error("Неправильно получены аттрибуты товаров. Specifications. Должно быть [\"Length\"]!=\"23 in\", а получено", prod.Specifications)
+	}
+
+	//Balloon Sleeve Crew Neck Sweater
+
 }
