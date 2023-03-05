@@ -1,7 +1,6 @@
 package pm6
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
@@ -59,12 +58,60 @@ func TestParseProduct(t *testing.T) {
 		}
 		t.Error("Не добавлен цвет \""+color+"\", однако есть цвета:", keys)
 	} else {
-		fmt.Printf("%+v\n", entityColor)
-
+		// Цвет
+		answerColor := "wild-oak"
+		if entityColor.ColorEng != answerColor {
+			t.Error("Для цвета \""+color+"\" цвет должен быть:", answerColor, "а получен\n>", prod.Item[color].ColorEng)
+		}
 		// Ссылка на товар
-		answerLink := "/p/1-state-balloon-sleeve-crew-neck-sweater-wild-oak/product/9621708/color/836781"
+		answerLink := "/product/9621708/color/836781"
 		if entityColor.Link != answerLink {
 			t.Error("Для цвета \""+color+"\" должна быть ссылка на товар", answerLink, "а получена\n>", prod.Item[color].Link)
+		}
+		// Цена
+		answerPrice := 42.0
+		if entityColor.Price != answerPrice {
+			t.Error("Для цвета \""+color+"\" цена должна быть:", answerPrice, "а получена\n>", prod.Item[color].Price)
+		}
+		// Размеры
+		answerSize := []string{"SM", "LG", "XL"}
+		if !Equal(entityColor.Size, answerSize) {
+			t.Error("Для цвета \""+color+"\" должны быть размеры:", answerSize, "а получены\n>", prod.Item[color].Size)
+		}
+		// Картинки
+		answerPicture := []string{"https://m.media-amazon.com/images/I/91GJ2hRcTeL.jpg", "https://m.media-amazon.com/images/I/91WQzGVObeL.jpg", "https://m.media-amazon.com/images/I/913KXCLH1lL.jpg", "https://m.media-amazon.com/images/I/71a8c4Fw+uL.jpg"}
+		if !Equal(entityColor.Image, answerPicture) {
+			t.Error("Для цвета \""+color+"\" должны быть картинки:", answerPicture, "а получены\n>", prod.Item[color].Image)
+		}
+
+	}
+}
+
+// Equal проверяет, что a и b содержат одинаковые элементы.
+// nil аргумент эквивалентен пустому срезу.
+func Equal(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if v != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func TestPictureCode(t *testing.T) {
+	var input, output, result string
+	var err error
+
+	input = "https://m.media-amazon.com/images/I/91GJ2hRcTeL._AC_SR58.88,73.60000000000001_.jpg"
+	output = "91GJ2hRcTeL"
+	if result, err = PictureCode(input); err != nil {
+		t.Error("Преобразователь ссылка в код картинки: из входного", input, "должно было получиться:", output, "\nОднако получена ошибка:", err)
+	} else {
+		if result != output {
+			t.Error("Преобразователь ссылка в код картинки: из входного", input, "должно было получиться:", output, "\nОднако получено:", result)
 		}
 	}
 }

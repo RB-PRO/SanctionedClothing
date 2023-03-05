@@ -1,8 +1,10 @@
 package pm6
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -19,15 +21,12 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	var tecalColor string // Цвет текущей страницы
 
 	// Создаём структуру цвета
-	c.OnHTML("div[id='buyBox'] form[id='buyBoxForm']", func(e *colly.HTMLElement) {
-
-		tecalColor = e.DOM.Find("div div span:last-of-type").Text()
+	c.OnHTML("form[method='POST']>div[class]:first-of-type>div[class]>span:last-of-type", func(e *colly.HTMLElement) {
+		tecalColor = e.DOM.Text()
 		tecalColor = bases.FormingColorEng(tecalColor)
-
-		fmt.Println("tecalColor", tecalColor)
-
 		prod.Item[tecalColor] = bases.ProdParam{ColorEng: tecalColor}
 		prod.Specifications = make(map[string]string)
+
 	})
 
 	// Артикул
@@ -63,9 +62,8 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 		}
 	})
 
-	// Размеры товара dpa-z epa-z
-	c.OnHTML("div[class='dpa-z epa-z'] div[class^='Jqa-z'] input", func(e *colly.HTMLElement) {
-		fmt.Println(e.DOM.Text())
+	// Размеры товара
+	c.OnHTML("form[id=buyBoxForm]>div>fieldset>div[class]>div[class]>input", func(e *colly.HTMLElement) {
 		if attr, ok := e.DOM.Attr("data-label"); ok { // Если такой атрибут существует
 			if entry, ok := prod.Item[tecalColor]; ok {
 				entry.Size = append(entry.Size, attr)
@@ -76,22 +74,15 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	})
 
 	// Картинки - Не работает.
-	c.OnHTML("img[class^='IU-z']", func(e *colly.HTMLElement) {
-		if attr, ok := e.DOM.Attr("src"); ok { // Если такой атрибут существует
+	c.OnHTML("div[id=productThumbnails] div ul li button picture img", func(e *colly.HTMLElement) {
+		if sourseValue, isFind := e.DOM.Attr("src"); isFind { // Если есть аттрибут src
 			if entry, oks := prod.Item[tecalColor]; oks { // То добавляем его
-				entry.Image = append(entry.Image, attr)
-				prod.Item[tecalColor] = entry
-			}
-		}
-	})
-
-	// Картинки 2 div[class^='yq-z'] https://m.media-amazon.com/images/I/91GJ2hRcTeL.AC_SS144.jpg
-	// https://m.media-amazon.com/images/I/${S}.AC_SS144.jpg
-	c.OnHTML("img[itemprop=image]", func(e *colly.HTMLElement) {
-		if attr, ok := e.DOM.Attr("srcSet"); ok { // Если такой атрибут существует
-			if entry, oks := prod.Item[tecalColor]; oks { // То добавляем его
-				entry.Image = append(entry.Image, attr)
-				prod.Item[tecalColor] = entry
+				// Берём из общей ссылки на маленькую картинку, базовую ссылку на основную картинку
+				if sourseValue, exitImgCodeerror := PictureCode(sourseValue); exitImgCodeerror == nil {
+					// Добавляем картинку в массив
+					entry.Image = append(entry.Image, "https://m.media-amazon.com/images/I/"+sourseValue+".jpg")
+					prod.Item[tecalColor] = entry
+				}
 			}
 		}
 	})
@@ -127,7 +118,6 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	c.OnHTML("div[itemprop=offers] meta[itemprop=url]", func(e *colly.HTMLElement) {
 		if link, linkFind := e.DOM.Attr("content"); linkFind {
 			prod.Link = link // Записать ссылку в продукт
-			fmt.Println(tecalColor)
 			// Если есть такой
 			if entry, oks := prod.Item[tecalColor]; oks { // То добавляем его
 				entry.Link = link
@@ -151,15 +141,16 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 	})
 
 	// Цена
-	c.OnHTML("span[class=eq-z]", func(e *colly.HTMLElement) {
-		fmt.Println(e.DOM.Text())
-		coast := e.DOM.Text()
-		coast = strings.ReplaceAll(coast, "$", "")
-		floaCoast, errCoast := strconv.ParseFloat(coast, 64) // Преобразование типов
-		if errCoast == nil {
-			if entry, oks := prod.Item[tecalColor]; oks { // То добавляем его
-				entry.Price = floaCoast
-				prod.Item[tecalColor] = entry
+	c.OnHTML("span[itemprop=price]", func(e *colly.HTMLElement) {
+		coast, findCoast := e.DOM.Attr("aria-label")
+		if findCoast {
+			coast = strings.ReplaceAll(coast, "$", "")
+			floaCoast, errCoast := strconv.ParseFloat(coast, 64) // Преобразование типов
+			if errCoast == nil {
+				if entry, oks := prod.Item[tecalColor]; oks { // То добавляем его
+					entry.Price = floaCoast
+					prod.Item[tecalColor] = entry
+				}
 			}
 		}
 	})
@@ -234,4 +225,26 @@ func GenderBook(key string) string {
 	default:
 		return key
 	}
+}
+
+// Достать код картинки из ссылки
+//
+//	https://m.media-amazon.com/images/I/91GJ2hRcTeL._AC_SR58.88,73.60000000000001_.jpg > 91GJ2hRcTeL
+func PictureCode(imgStr string) (code string, parseError error) {
+	u, err := url.Parse(imgStr)
+	if err != nil {
+		return "", parseError
+	}
+
+	if !strings.Contains(u.Path, "/images/I/") {
+		return "", errors.New("nothing \"/images/I/\" in url: " + imgStr)
+	}
+	code = strings.ReplaceAll(u.Path, "/images/I/", "") // /images/I/91GJ2hRcTeL._AC_SR58.88,73.60000000000001_.jpg > 91GJ2hRcTeL._AC_SR58.88,73.60000000000001_.jpg
+
+	strs := strings.Split(code, ".")
+	if len(strs) == 0 {
+		return "", errors.New("null imgStr.split for url: " + imgStr)
+	}
+
+	return strs[0], nil
 }
