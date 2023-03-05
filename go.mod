@@ -17,6 +17,7 @@ require (
 	github.com/antchfx/htmlquery v1.2.6 // indirect
 	github.com/antchfx/xmlquery v1.3.14 // indirect
 	github.com/antchfx/xpath v1.2.2 // indirect
+	github.com/dafanasev/go-yandex-translate v0.0.0-20180809113933-68755d2e6c76 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.3.1 // indirect
@@ -24,6 +25,7 @@ require (
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/richardlehane/mscfb v1.0.4 // indirect
 	github.com/richardlehane/msoleps v1.0.3 // indirect
 	github.com/saintfish/chardet v0.0.0-20230101081208-5e3ef4b5456d // indirect

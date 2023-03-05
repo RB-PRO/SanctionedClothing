@@ -12,6 +12,8 @@ github.com/antchfx/xpath v1.2.2 h1:fsKX4sHfxhsGpDMYjsvCmGC0EGdiT7XA0af/6PP6Oa0=
 github.com/antchfx/xpath v1.2.2/go.mod h1:i54GszH55fYfBmoZXapTHN8T8tkcHfRgLyVwwqzXNcs=
 github.com/cheggaaa/pb v1.0.29 h1:FckUN5ngEk2LpvuG0fw1GEFx6LtyY2pWI/Z2QgCnEYo=
 github.com/cheggaaa/pb v1.0.29/go.mod h1:W40334L7FMC5JKWldsTWbdGjLo0RxUKK73K+TuPxX30=
+github.com/dafanasev/go-yandex-translate v0.0.0-20180809113933-68755d2e6c76 h1:Y2H17Z7CJaVriw3FW7bCT37XXiuF5kscPi7BdmDO3k0=
+github.com/dafanasev/go-yandex-translate v0.0.0-20180809113933-68755d2e6c76/go.mod h1:Xrie/yuBnF1+K8DLGwyhXJQoaoaooyZpvxeSl1a2aFk=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -43,6 +45,8 @@ github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826/go.mod h1:TaXosZuwd
 github.com/mrsinham/catego v1.1.1 h1:sN73FZi1NGwDVlf6qiRPoAbaszTmBMnsCuSLy+SSeYM=
 github.com/mrsinham/catego v1.1.1/go.mod h1:AZQb4FMmvnVdCyfsDS/g7cdEQfJ8ecP3inibo4mkQb4=
 github.com/philhofer/fwd v1.1.1/go.mod h1:gk3iGcWd9+svBvR0sR+KPcfE+RNWozjowpeBVG3ZVNU=
+github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
+github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/richardlehane/mscfb v1.0.4 h1:WULscsljNPConisD5hR0+OyZjwK46Pfyr6mPu5ZawpM=
