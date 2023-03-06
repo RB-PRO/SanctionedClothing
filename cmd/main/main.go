@@ -12,5 +12,6 @@ func main() {
 
 	//tests.TparseANDadd()
 	//tests.Run_pm6()
-	tests.Run_pm6_adventing_Sortered()
+	//tests.Run_pm6_adventing_Sortered()
+	tests.AddProd()
 }
