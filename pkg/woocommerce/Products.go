@@ -76,6 +76,8 @@ func (user *User) AddProduct_WC(ProdWC ProductWC) error {
 	// Если всё верно сработало и произошло добавление
 	return nil
 }
+
+// Перевести базовую структуру товара в структу запроса для woocommerce
 func Product2ProductWC(prod bases.Product2, CatIDcreate, tagId int) (prodWC ProductWC) {
 	prodWC.Name = prod.Name                   // Назвние товара
 	prodWC.ShortDescription = prod.FullName   // краткое описание товара

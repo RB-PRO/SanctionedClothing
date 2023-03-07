@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"strings"
+
+	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 )
 
 // Структура тэгов
@@ -78,4 +80,15 @@ func FindIdTagSlug(tags []Tag, slug string) int {
 		}
 	}
 	return 0
+}
+
+// Формирование мапы с тегами, где ключ - slug(ссылка), а значение - его ID в системе woocommerce
+func MapTags(tags []Tag) map[string]int {
+	tagMap := make(map[string]int)
+	for _, tagValue := range tags {
+		if _, isTag := bases.GenderBook(tagValue.Slug); isTag {
+			tagMap[tagValue.Slug] = tagValue.Id
+		}
+	}
+	return tagMap
 }

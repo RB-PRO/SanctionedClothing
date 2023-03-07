@@ -132,7 +132,7 @@ func ParseProduct(prod *bases.Product2, ProductColorLink string) {
 		if _, isFind := e.DOM.Find("legend").Attr("id"); isFind {
 			textSize := e.DOM.Find("legend span").Text()
 			textSize = strings.ReplaceAll(textSize, "'s Sizes:", "") // Удалить лишнее из гендера
-			prod.Cat[0].Name = GenderBook(textSize)                  // Название главной категории товара
+			prod.Cat[0].Name, _ = bases.GenderBook(textSize)         // Название главной категории товара
 			textSize = strings.ToLower(textSize)                     // Понизить регистр
 			prod.Cat[0].Slug = textSize                              // Название главной ссылки категории товара
 			prod.GenderLabel = textSize                              // Заполнить гендер
@@ -207,24 +207,6 @@ func PrintItems(items map[string]bases.ProdParam) (output string) {
 			"\tКартинка: " + strings.Join(val.Image, ",") + "\n"
 	}
 	return output
-}
-
-// Словарь, который используется для Name в GenderLabel
-// и
-// роидетльской категории. Например Женщины/woman
-//
-//	Функция принимает Woman[или]woman, а отдаёт Женщины
-func GenderBook(key string) string {
-	keyLower := strings.ToLower(key) // Сделать нижний шрифт
-	switch keyLower {
-	case "women":
-		return "Женщины"
-	case "man":
-		return "Мужчины"
-
-	default:
-		return key
-	}
 }
 
 // Достать код картинки из ссылки

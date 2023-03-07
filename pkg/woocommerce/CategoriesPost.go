@@ -3,6 +3,8 @@ package woocommerce
 import (
 	"encoding/json"
 	"errors"
+
+	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 )
 
 // Структура ответа API на создание категории
@@ -66,4 +68,37 @@ func (user *User) AddCat_WC(valetCat MeCat) (int, error) {
 
 	// Если всё верно сработало и произошло добавление
 	return AddCatRes.ID, nil
+}
+
+// Функция добавления категории с обновлением домашней структуры данных
+//
+// Используется в качестве внешнего интерфейса для добавления категории товара по методике - добавил - проверил - получил ID
+func (user *User) AddCat(NodeCategoryes *Node, NewCategory bases.Cat) (CatIDcreate int, err error) {
+	//var CatIDcreate int // ID новой или старой категории
+	for i := 0; i < 4; i++ {
+		findNode, findNodeBool := NodeCategoryes.FindSlug(NewCategory[i].Slug)
+		if !findNodeBool { // Если категория не добавлена
+
+			// Добавляем в дерево категорий
+			NodeCategoryes.Add(CatIDcreate, MeCat{Id: CatIDcreate, Name: NewCategory[i].Name, Slug: NewCategory[i].Slug})
+
+			// То добавляем её в WC
+			cat := MeCat{
+				Name:     NewCategory[i].Name,
+				Slug:     NewCategory[i].Slug,
+				ParentID: CatIDcreate,
+			}
+
+			// Добавить категорию на WP
+			CatIDcreate, err = user.AddCat_WC(cat)
+			if err != nil {
+				return 0, err
+			}
+
+		} else {
+			CatIDcreate = findNode.Id
+		}
+	}
+	// fmt.Println("ID новой актуальной категории товара - ", CatIDcreate)
+	return CatIDcreate, nil
 }

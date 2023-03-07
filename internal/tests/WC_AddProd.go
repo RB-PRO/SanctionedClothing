@@ -26,10 +26,11 @@ func AddProd() {
 	if tagsError != nil {
 		log.Fatalln(tagsError)
 	}
-	fmt.Println(tags)
-	for _, tagValue := range tags {
+	fmt.Printf("%#+v", tags)
 
-	}
+	// Создать Мапу тэгов
+	tagMap := woocommerce.MapTags(tags)
+	fmt.Println("Найденные теги из словаря", tagMap)
 
 	// Получить дерево категорий
 	plc, errPLC := userWC.ProductsCategories()
@@ -103,13 +104,21 @@ func AddProd() {
 		},
 	}
 
-	// Создать структуру добавления товара
-	prodWC := woocommerce.Product2ProductWC(variet.Product[0], 498, 1)
-
-	// Добавление товара
-	errorAddProd := userWC.AddProduct_WC(prodWC)
-	if errorAddProd != nil {
-		fmt.Println(errorAddProd)
+	// Создать категории для товаров и получить её ID
+	idCat, errorAddCat := userWC.AddCat(NodeCategoryes, variet.Product[0].Cat)
+	if errorAddCat != nil {
+		fmt.Println("Error IDCAT")
 	}
 
+	idGender, isGenderSlug := bases.GenderBook(variet.Product[0].GenderLabel)
+	if isGenderSlug {
+		// Создать структуру добавления товара
+		prodWC := woocommerce.Product2ProductWC(variet.Product[0], idCat, tagMap[idGender])
+
+		// Добавление товара
+		errorAddProd := userWC.AddProduct_WC(prodWC)
+		if errorAddProd != nil {
+			fmt.Println(errorAddProd)
+		}
+	}
 }
