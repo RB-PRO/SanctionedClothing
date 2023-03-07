@@ -1,7 +1,6 @@
 package woocommerce_test
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -23,7 +22,7 @@ func TestProductsAttributes(t *testing.T) {
 		t.Error(attrError)
 	} else {
 		for ind, val := range attr.Attribute {
-			fmt.Println(ind, val.Name)
+			t.Log(ind, val.Name)
 		}
 	}
 

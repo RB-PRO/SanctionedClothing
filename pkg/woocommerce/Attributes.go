@@ -3,6 +3,7 @@ package woocommerce
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type Attributes struct {
@@ -32,12 +33,9 @@ type ProductListAttributes struct {
 //
 // [Orders]: http://woocommerce.github.io/woocommerce-rest-api-docs/?shell#list-all-product-categories
 func (user *User) ProductsAttributes() (Attributes, error) {
-	// Структура по категории
-	var attrib Attributes
-	//var TotalPages int = 2
+	var attrib Attributes // Структура аттрибутов
 
 	for i, TotalPages := 1, 2; i <= TotalPages; i++ {
-		var categ Attributes
 		var bodyBytes []byte
 		var errData error
 
@@ -45,17 +43,42 @@ func (user *User) ProductsAttributes() (Attributes, error) {
 		if errData != nil {
 			return Attributes{}, errData
 		}
+		fmt.Println("TotalPages", TotalPages)
 
-		// Получить ответ
-		errUnmarshal := json.Unmarshal(bodyBytes, &categ)
+		// Распарсим входную инормацию
+		var Attribute []ProductListAttributes
+		errUnmarshal := json.Unmarshal(bodyBytes, &Attribute)
 		if errUnmarshal != nil { // Если ошибка распарсивания в структуру данных
 			return Attributes{}, errors.New("ProductsAttributes: Не удалось распарсить ответ сервера: " + string(bodyBytes))
 		}
-
-		attrib.Attribute = append(attrib.Attribute, categ.Attribute...)
+		attrib.Attribute = append(attrib.Attribute, Attribute...)
 
 	}
 
 	// Если всё верно сработало
 	return attrib, nil
+}
+
+// Поиск ID аттрибута по имени
+//
+//	Attributes.name -> Attributes.id
+func (attr Attributes) Find_id_of_name(name string) (int, error) {
+	for _, value := range attr.Attribute {
+		if value.Name == name {
+			return value.ID, nil
+		}
+	}
+	return 0, errors.New("Find_id_of_name: Не найден аттрибут с таким именем (Name)")
+}
+
+// Поиск ID аттрибута по ссылке
+//
+//	Attributes.slug -> Attributes.id
+func (attr Attributes) Find_id_of_slug(slug string) (int, error) {
+	for _, value := range attr.Attribute {
+		if value.Slug == slug {
+			return value.ID, nil
+		}
+	}
+	return 0, errors.New("Find_id_of_name: Не найден аттрибут с такой ссылкой (Slug)")
 }

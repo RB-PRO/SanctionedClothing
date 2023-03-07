@@ -44,6 +44,26 @@ type ProductWC struct {
 	} `json:"data"`
 }
 
+// Перевести базовую структуру товара в структу запроса для woocommerce
+func Product2ProductWC(prod bases.Product2, CatIDcreate, tagId int) (prodWC ProductWC) {
+	prodWC.Name = prod.Name                   // Назвние товара
+	prodWC.ShortDescription = prod.FullName   // краткое описание товара
+	prodWC.Description = prod.Description.Rus // Описакние товара на Русском
+	prodWC.Type = "variable"                  // simple, grouped, external, variable и woosb.
+
+	// Категория
+	prodWC.Categories = []struct {
+		ID int "json:\"id\""
+	}{{CatIDcreate}}
+
+	// Метка
+	prodWC.Tags = []struct {
+		ID int "json:\"id\""
+	}{{tagId}}
+
+	return prodWC
+}
+
 // Метод [products] поможет Вам добавить товар
 //
 // # Использую для добавления товара
@@ -75,24 +95,4 @@ func (user *User) AddProduct_WC(ProdWC ProductWC) error {
 
 	// Если всё верно сработало и произошло добавление
 	return nil
-}
-
-// Перевести базовую структуру товара в структу запроса для woocommerce
-func Product2ProductWC(prod bases.Product2, CatIDcreate, tagId int) (prodWC ProductWC) {
-	prodWC.Name = prod.Name                   // Назвние товара
-	prodWC.ShortDescription = prod.FullName   // краткое описание товара
-	prodWC.Description = prod.Description.Rus // Описакние товара на Русском
-	prodWC.Type = "variable"                  // simple, grouped, external, variable и woosb.
-
-	// Категория
-	prodWC.Categories = []struct {
-		ID int "json:\"id\""
-	}{{CatIDcreate}}
-
-	// Метка
-	prodWC.Tags = []struct {
-		ID int "json:\"id\""
-	}{{tagId}}
-
-	return prodWC
 }
