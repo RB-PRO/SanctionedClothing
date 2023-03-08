@@ -88,6 +88,18 @@ func (root *Node) PrintInorder(prefix string) {
 	}
 }
 
+// Вывод всех категорий
+func (root *Node) PrintInorderName(prefix string) {
+	if root == nil {
+		return
+	}
+
+	fmt.Println(prefix, root.Name)
+	for _, val := range root.Children {
+		val.PrintInorderName(prefix + "-")
+	}
+}
+
 ///////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
 

@@ -1,11 +1,16 @@
 package tests
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 	"github.com/RB-PRO/SanctionedClothing/pkg/woocommerce"
+	wc "github.com/hiscaler/woocommerce-go"
+	config "github.com/hiscaler/woocommerce-go/config"
+	"github.com/hiscaler/woocommerce-go/entity"
 )
 
 func AddProd() {
@@ -38,7 +43,7 @@ func AddProd() {
 		log.Fatalln(errPLC)
 	}
 
-	// Дерево категорий
+	// Дерево категорий - Формирование внутренней структуры
 	NodeCategoryes := woocommerce.NewCategoryes()
 	for _, categ := range plc.Category {
 		addingCategory := woocommerce.MeCat{
@@ -48,7 +53,6 @@ func AddProd() {
 		}
 		NodeCategoryes.Add(categ.Parent, addingCategory)
 	}
-	NodeCategoryes.PrintInorder("-") // печать категорий
 
 	// Создать тестовый товар
 	variet := bases.Variety2{
@@ -109,9 +113,31 @@ func AddProd() {
 	if errorAddCat != nil {
 		fmt.Println("Error IDCAT")
 	}
+	fmt.Println("ID категории", idCat)
 
+	// Аттрибуты
+	attr, errAttr := userWC.ProductsAttributes()
+	if errAttr != nil {
+		log.Fatalln(errAttr)
+	}
+	idAttrColor, isFind_AttrColor := attr.Find_id_of_slug("color")
+	if isFind_AttrColor != nil {
+		fmt.Println("Не нашёл аттрибут Цвета")
+	}
+	fmt.Println("ID аттрибута цвета", idAttrColor)
+	idAttrSize, isFind_AttrSize := attr.Find_id_of_slug("size")
+	if isFind_AttrSize != nil {
+		fmt.Println("Не нашёл аттрибут Размера")
+	}
+	fmt.Println("ID аттрибута Размера", idAttrSize)
+
+	// Собираем
 	idGender, isGenderSlug := bases.GenderBook(variet.Product[0].GenderLabel)
-	if isGenderSlug {
+	if !isGenderSlug {
+		fmt.Println("Не найден гендер.", idGender)
+	}
+
+	/*
 		// Создать структуру добавления товара
 		prodWC := woocommerce.Product2ProductWC(variet.Product[0], idCat, tagMap[idGender])
 
@@ -120,5 +146,59 @@ func AddProd() {
 		if errorAddProd != nil {
 			fmt.Println(errorAddProd)
 		}
+	*/
+
+	// **************************************
+	// Новое добавление товара
+
+	// Read you config
+	b, err := os.ReadFile("config_test.json")
+	if err != nil {
+		panic(fmt.Sprintf("Read config error: %s", err.Error()))
 	}
+	var c config.Config
+	err = json.Unmarshal(b, &c)
+	if err != nil {
+		panic(fmt.Sprintf("Parse config file error: %s", err.Error()))
+	}
+
+	wooClient := wc.NewClient(c)
+
+	// Нужно за раз с категориями загружать.
+	var ParentId int
+	for ind, prod := range variet.Product[0].Item {
+		paramVariableProduct := wc.CreateProductRequest{
+			Name:             variet.Product[0].Name,
+			Type:             "variable",
+			SKU:              variet.Product[0].Article + ind,
+			Description:      variet.Product[0].Description.Eng,
+			Tags:             []entity.ProductTag{{ID: tagMap[variet.Product[0].GenderLabel], Slug: variet.Product[0].GenderLabel}},
+			ShortDescription: variet.Product[0].FullName,
+			RegularPrice:     228.0,
+			ParentId:         ParentId,
+			Attributes:       []entity.ProductAttribute{entity.ProductAttribute{Slug: "color"}},
+			DefaultAttributes: []entity.ProductDefaultAttribute{
+				entity.ProductDefaultAttribute{
+					Name:   "Color",
+					Option: ind,
+				},
+			},
+		}
+
+		// Добавление всех размеров
+		for _, valProd := range prod.Size {
+			paramVariableProduct.DefaultAttributes = append(paramVariableProduct.DefaultAttributes, entity.ProductDefaultAttribute{
+				Name:   "Size",
+				Option: valProd,
+			})
+		}
+
+		item, errorItem := wooClient.Services.Product.Create(paramVariableProduct)
+		if errorItem != nil {
+			log.Fatal(errorItem)
+		}
+		ParentId = item.ID
+
+	}
+
 }
