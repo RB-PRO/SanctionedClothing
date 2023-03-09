@@ -128,9 +128,25 @@ func AddProd() {
 		panic(fmt.Sprintf("Parse config file error: %s", err.Error()))
 	}
 
+	// Аттрибуты
+	attr, errAttr := userWC.ProductsAttributes()
+	if errAttr != nil {
+		log.Fatalln(errAttr)
+	}
+	idAttrColor, isFind_AttrColor := attr.Find_id_of_name("Цвет")
+	if isFind_AttrColor != nil {
+		fmt.Println("Не нашёл аттрибут Цвета")
+	}
+	fmt.Println("ID аттрибута Цвета", idAttrColor)
+	idAttrSize, isFind_AttrSize := attr.Find_id_of_name("Размер")
+	if isFind_AttrSize != nil {
+		fmt.Println("Не нашёл аттрибут Размера")
+	}
+	fmt.Println("ID аттрибута Размера", idAttrSize)
+
 	//
 	wooClient := wc.NewClient(c)
-	fmt.Println(AddProduct(userWC, wooClient, variet.Product[0], tagMap, NodeCategoryes))
+	fmt.Println(AddProduct(userWC, wooClient, variet.Product[0], tagMap, NodeCategoryes, idAttrColor, idAttrSize))
 
 	//paramAttr:=wc.Term
 
@@ -153,7 +169,7 @@ func AddProd() {
 	*/
 }
 
-func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Product2, tagMap map[string]int, NodeCategoryes *woocommerce.Node) error {
+func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Product2, tagMap map[string]int, NodeCategoryes *woocommerce.Node, idAttrColor int, idAttrSize int) error {
 
 	// Создать категории для товаров и получить её ID
 	idCat, errorAddCat := userWC.AddCat(NodeCategoryes, product.Cat)
@@ -161,23 +177,6 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 		fmt.Println("Error IDCAT")
 	}
 	fmt.Println("ID категории", idCat)
-
-	// Аттрибуты
-	attr, errAttr := userWC.ProductsAttributes()
-	if errAttr != nil {
-		log.Fatalln(errAttr)
-	}
-
-	idAttrColor, isFind_AttrColor := attr.Find_id_of_name("Цвет")
-	if isFind_AttrColor != nil {
-		fmt.Println("Не нашёл аттрибут Цвета")
-	}
-	fmt.Println("ID аттрибута Цвета", idAttrColor)
-	idAttrSize, isFind_AttrSize := attr.Find_id_of_name("Размер")
-	if isFind_AttrSize != nil {
-		fmt.Println("Не нашёл аттрибут Размера")
-	}
-	fmt.Println("ID аттрибута Размера", idAttrSize)
 
 	// Собираем
 	idGender, isGenderSlug := bases.GenderBook(product.GenderLabel)
@@ -189,7 +188,7 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 	for _, colorSet := range product.Item {
 		colors = append(colors, colorSet.ColorEng)
 	}
-	//Сделаю массив со всеми изображениями
+	// Сделаю массив со всеми изображениями
 	imageInput := make([]entity.ProductImage, 0)
 	for _, colorItemValue := range product.Item {
 		for indexImage, valueImage := range colorItemValue.Image {
@@ -206,9 +205,10 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 		Type:             "variable",
 		SKU:              product.Article,
 		Description:      product.Description.Eng,
-		Tags:             []entity.ProductTag{{ID: tagMap[product.GenderLabel], Slug: product.GenderLabel}},
+		Tags:             []entity.ProductTag{{ID: tagMap[product.GenderLabel]}},
 		ShortDescription: product.FullName,
 		RegularPrice:     228.0,
+		Slug:             bases.FormingColorEng(product.Name),
 
 		Images: imageInput,
 
@@ -239,18 +239,29 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 
 	// Вариационные товары
 	for colorKey, colorItemValue := range product.Item {
+
 		/*
+			// Массив картинок. Но WC не позволяет загрузить картинки в вариационный товар
 			imageInput := make([]entity.ProductImage, 0)
-			for _, valueImage := range colorItemValue.Image {
-				imageInput = append(imageInput, entity.ProductImage{Src: valueImage})
-			}*/
+			for indexImage, valueImage := range colorItemValue.Image {
+				imageInput = append(imageInput, entity.ProductImage{
+					Src:  valueImage,
+					Name: valueImage + strconv.Itoa(indexImage) + ".jpg",
+					Alt:  valueImage + strconv.Itoa(indexImage),
+				})
+			}
+		*/
 
 		itemVar, errvar := wooC.Services.ProductVariation.Create(itemID, wc.CreateProductVariationRequest{
 			SKU:          product.Article + colorKey,
 			RegularPrice: colorItemValue.Price,
-			Description:  product.Description.Eng,
-			Image:        &entity.ProductImage{Src: colorItemValue.Image[0]},
-			//Image: imageInput,
+			Description:  "Цвет: " + colorItemValue.ColorEng + "\n" + product.Description.Eng,
+			Image: &entity.ProductImage{
+				Src:  colorItemValue.Image[0],
+				Name: colorItemValue.ColorEng + ".jpg",
+				Alt:  colorItemValue.ColorEng,
+			},
+			//Images: imageInput,
 		})
 		if errvar != nil {
 			fmt.Println(errvar)
