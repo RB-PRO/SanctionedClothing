@@ -5,12 +5,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 	"github.com/RB-PRO/SanctionedClothing/pkg/woocommerce"
 	wc "github.com/hiscaler/woocommerce-go"
 	config "github.com/hiscaler/woocommerce-go/config"
 	"github.com/hiscaler/woocommerce-go/entity"
+	//"honnef.co/go/tools/config"
+	//"honnef.co/go/tools/config"
+	//"github.com/RB-PRO/SanctionedClothing/pkg/woocommerce"
+	//config "github.com/hiscaler/woocommerce-go/config"
 )
 
 func AddProd() {
@@ -34,6 +39,7 @@ func AddProd() {
 
 	// Создать Мапу тэгов
 	tagMap := woocommerce.MapTags(tags)
+	fmt.Println(tagMap)
 
 	// Получить дерево категорий
 	plc, errPLC := userWC.ProductsCategories()
@@ -63,6 +69,7 @@ func AddProd() {
 				Cat:            bases.Cat{{"Женщины", "women"}, {"Clothing", "clothing"}, {"Sweaters", "sweaters"}, {"1.STATE", "1-state"}},
 				GenderLabel:    "women",
 				Specifications: map[string]string{"Length": "23 in"},
+				Size:           []string{"SM", "LG", "XL"},
 				Description: struct {
 					Eng string
 					Rus string
@@ -96,35 +103,6 @@ func AddProd() {
 		},
 	}
 
-	// Создать категории для товаров и получить её ID
-	idCat, errorAddCat := userWC.AddCat(NodeCategoryes, variet.Product[0].Cat)
-	if errorAddCat != nil {
-		fmt.Println("Error IDCAT")
-	}
-	fmt.Println("ID категории", idCat)
-
-	// Аттрибуты
-	attr, errAttr := userWC.ProductsAttributes()
-	if errAttr != nil {
-		log.Fatalln(errAttr)
-	}
-	idAttrColor, isFind_AttrColor := attr.Find_id_of_name("Цвет")
-	if isFind_AttrColor != nil {
-		fmt.Println("Не нашёл аттрибут Цвета")
-	}
-	fmt.Println("ID аттрибута Цвета", idAttrColor)
-	idAttrSize, isFind_AttrSize := attr.Find_id_of_name("Размер")
-	if isFind_AttrSize != nil {
-		fmt.Println("Не нашёл аттрибут Размера")
-	}
-	fmt.Println("ID аттрибута Размера", idAttrSize)
-
-	// Собираем
-	idGender, isGenderSlug := bases.GenderBook(variet.Product[0].GenderLabel)
-	if !isGenderSlug {
-		fmt.Println("Не найден гендер.", idGender)
-	}
-
 	/*
 		// Создать структуру добавления товара
 		prodWC := woocommerce.Product2ProductWC(variet.Product[0], idCat, tagMap[idGender])
@@ -150,7 +128,9 @@ func AddProd() {
 		panic(fmt.Sprintf("Parse config file error: %s", err.Error()))
 	}
 
+	//
 	wooClient := wc.NewClient(c)
+	fmt.Println(AddProduct(userWC, wooClient, variet.Product[0], tagMap, NodeCategoryes))
 
 	//paramAttr:=wc.Term
 
@@ -159,46 +139,126 @@ func AddProd() {
 	//tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(wooClient, idAttrColor, variet.Product[0].Item["wild-oak"].ColorEng, "wild-oak")
 	//fmt.Println("Для данного товара Аттрибуты цвета будут:", tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug)
 
+	// *******************************************
+	/*
+		paramVar := wc.CreateProductVariationRequest{
+			SKU:   variet.Product[0].Article + "wild-oak",
+			Image: &entity.ProductImage{Src: variet.Product[0].Item["wild-oak"].Image[0]},
+		}
+		itemVar, errvar := wooClient.Services.ProductVariation.Create(itemID, paramVar)
+		if err != nil {
+			fmt.Println(errvar)
+		}
+		fmt.Println(itemVar.ID)
+	*/
+}
+
+func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Product2, tagMap map[string]int, NodeCategoryes *woocommerce.Node) error {
+
+	// Создать категории для товаров и получить её ID
+	idCat, errorAddCat := userWC.AddCat(NodeCategoryes, product.Cat)
+	if errorAddCat != nil {
+		fmt.Println("Error IDCAT")
+	}
+	fmt.Println("ID категории", idCat)
+
+	// Аттрибуты
+	attr, errAttr := userWC.ProductsAttributes()
+	if errAttr != nil {
+		log.Fatalln(errAttr)
+	}
+
+	idAttrColor, isFind_AttrColor := attr.Find_id_of_name("Цвет")
+	if isFind_AttrColor != nil {
+		fmt.Println("Не нашёл аттрибут Цвета")
+	}
+	fmt.Println("ID аттрибута Цвета", idAttrColor)
+	idAttrSize, isFind_AttrSize := attr.Find_id_of_name("Размер")
+	if isFind_AttrSize != nil {
+		fmt.Println("Не нашёл аттрибут Размера")
+	}
+	fmt.Println("ID аттрибута Размера", idAttrSize)
+
+	// Собираем
+	idGender, isGenderSlug := bases.GenderBook(product.GenderLabel)
+	if !isGenderSlug {
+		fmt.Println("Не найден гендер.", idGender)
+	}
+
+	var colors []string
+	for _, colorSet := range product.Item {
+		colors = append(colors, colorSet.ColorEng)
+	}
+	//Сделаю массив со всеми изображениями
+	imageInput := make([]entity.ProductImage, 0)
+	for _, colorItemValue := range product.Item {
+		for indexImage, valueImage := range colorItemValue.Image {
+			imageInput = append(imageInput, entity.ProductImage{
+				Src:  valueImage,
+				Name: valueImage + strconv.Itoa(indexImage) + ".jpg",
+				Alt:  valueImage + strconv.Itoa(indexImage),
+			})
+		}
+	}
 	// Нужно за раз с категориями загружать.
 	paramVariableProduct := wc.CreateProductRequest{
-		Name:             variet.Product[0].Name,
+		Name:             product.Name,
 		Type:             "variable",
-		SKU:              variet.Product[0].Article,
-		Description:      variet.Product[0].Description.Eng,
-		Tags:             []entity.ProductTag{{ID: tagMap[variet.Product[0].GenderLabel], Slug: variet.Product[0].GenderLabel}},
-		ShortDescription: variet.Product[0].FullName,
+		SKU:              product.Article,
+		Description:      product.Description.Eng,
+		Tags:             []entity.ProductTag{{ID: tagMap[product.GenderLabel], Slug: product.GenderLabel}},
+		ShortDescription: product.FullName,
 		RegularPrice:     228.0,
+
+		Images: imageInput,
 
 		Categories: []entity.ProductCategory{{ID: idCat}},
 
-		MetaData: []entity.Meta{
-			entity.Meta{
-				Key:   "Цвет",
-				Value: "Wild Oak",
+		Attributes: []entity.ProductAttribute{
+			{
+				ID:        idAttrColor,
+				Variation: true,
+				Visible:   true,
+				Options:   colors,
 			},
-			entity.Meta{
-				Key:   "Цвет",
-				Value: "wild-oak",
-			},
-			entity.Meta{
-				Key:   "Размер",
-				Value: "S",
+			{
+				ID:        idAttrSize,
+				Variation: true,
+				Visible:   true,
+				Options:   product.Size,
 			},
 		},
 	}
 
-	item, errorItem := wooClient.Services.Product.Create(paramVariableProduct)
+	item, errorItem := wooC.Services.Product.Create(paramVariableProduct)
 	if errorItem != nil {
 		log.Fatal(errorItem)
 	}
 	itemID := item.ID
 	fmt.Println("Done itemID", itemID)
 
-	// *******************************************
+	// Вариационные товары
+	for colorKey, colorItemValue := range product.Item {
+		/*
+			imageInput := make([]entity.ProductImage, 0)
+			for _, valueImage := range colorItemValue.Image {
+				imageInput = append(imageInput, entity.ProductImage{Src: valueImage})
+			}*/
 
-	//wild-oak
-	//params:=wooClient.Services.ProductVariation.
+		itemVar, errvar := wooC.Services.ProductVariation.Create(itemID, wc.CreateProductVariationRequest{
+			SKU:          product.Article + colorKey,
+			RegularPrice: colorItemValue.Price,
+			Description:  product.Description.Eng,
+			Image:        &entity.ProductImage{Src: colorItemValue.Image[0]},
+			//Image: imageInput,
+		})
+		if errvar != nil {
+			fmt.Println(errvar)
+		}
+		fmt.Println(itemVar.ID)
+	}
 
+	return nil
 }
 
 func AddAttr(wooClient *wc.WooCommerce, idAttrColor int, newName, NewSlug string) (tecalAttrId int, tecalAttrName string, tecalAttrSlug string) {
