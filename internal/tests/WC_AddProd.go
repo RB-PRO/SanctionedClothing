@@ -31,11 +31,9 @@ func AddProd() {
 	if tagsError != nil {
 		log.Fatalln(tagsError)
 	}
-	fmt.Printf("%#+v", tags)
 
 	// Создать Мапу тэгов
 	tagMap := woocommerce.MapTags(tags)
-	fmt.Println("Найденные теги из словаря", tagMap)
 
 	// Получить дерево категорий
 	plc, errPLC := userWC.ProductsCategories()
@@ -77,28 +75,18 @@ func AddProd() {
 				Hand wash, dry flat.
 				Imported.
 				Product measurements were taken using size SM. Please note that measurements may vary by size.
-				 Length: 23 in
-				Complete your cool-weather look with the soft and cozy 1.STATE™ Balloon Sleeve Crew Neck Sweater.
-				SKU: #9621708
-				Pull-over design with ribbed crew neckline.
-				Long balloon sleeves with elongated, ribbed cuffs.
-				Classic fit with straight hemline.
-				73% acrylic, 24% polyester, 3% spandex.
-				Hand wash, dry flat.
-				Imported.
-				Product measurements were taken using size SM. Please note that measurements may vary by size.
 				 Length: 23 in`},
 				Item: map[string]bases.ProdParam{
 					"wild-oak": bases.ProdParam{
 						Link:     "/product/9621708/color/836781",
-						ColorEng: "wild-oak",
+						ColorEng: "Wild Oak",
 						Price:    42.0,
 						Size:     []string{"SM", "LG", "XL"},
 						Image:    []string{"https://m.media-amazon.com/images/I/91GJ2hRcTeL.jpg", "https://m.media-amazon.com/images/I/91WQzGVObeL.jpg", "https://m.media-amazon.com/images/I/913KXCLH1lL.jpg", "https://m.media-amazon.com/images/I/71a8c4Fw+uL.jpg"},
 					},
 					"antique-white": bases.ProdParam{
 						Link:     "/product/9621708/color/26216",
-						ColorEng: "antique-white",
+						ColorEng: "Antique White",
 						Price:    31.58,
 						Size:     []string{"SM", "LG", "XL"},
 						Image:    []string{"https://m.media-amazon.com/images/I/71Mf94kDFvL.jpg", "https://m.media-amazon.com/images/I/71EOOcBc+bL.jpg", "https://m.media-amazon.com/images/I/81PeCItuTmL.jpg", "https://m.media-amazon.com/images/I/71+cz20ouIL.jpg"},
@@ -120,12 +108,12 @@ func AddProd() {
 	if errAttr != nil {
 		log.Fatalln(errAttr)
 	}
-	idAttrColor, isFind_AttrColor := attr.Find_id_of_slug("color")
+	idAttrColor, isFind_AttrColor := attr.Find_id_of_name("Цвет")
 	if isFind_AttrColor != nil {
 		fmt.Println("Не нашёл аттрибут Цвета")
 	}
-	fmt.Println("ID аттрибута цвета", idAttrColor)
-	idAttrSize, isFind_AttrSize := attr.Find_id_of_slug("size")
+	fmt.Println("ID аттрибута Цвета", idAttrColor)
+	idAttrSize, isFind_AttrSize := attr.Find_id_of_name("Размер")
 	if isFind_AttrSize != nil {
 		fmt.Println("Не нашёл аттрибут Размера")
 	}
@@ -164,41 +152,79 @@ func AddProd() {
 
 	wooClient := wc.NewClient(c)
 
+	//paramAttr:=wc.Term
+
+	// Получу все аттрибуты и сохраню в мапу их ID, где ключ - цвет
+	//wild-oak antique-white
+	//tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(wooClient, idAttrColor, variet.Product[0].Item["wild-oak"].ColorEng, "wild-oak")
+	//fmt.Println("Для данного товара Аттрибуты цвета будут:", tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug)
+
 	// Нужно за раз с категориями загружать.
-	var ParentId int
-	for ind, prod := range variet.Product[0].Item {
-		paramVariableProduct := wc.CreateProductRequest{
-			Name:             variet.Product[0].Name,
-			Type:             "variable",
-			SKU:              variet.Product[0].Article + ind,
-			Description:      variet.Product[0].Description.Eng,
-			Tags:             []entity.ProductTag{{ID: tagMap[variet.Product[0].GenderLabel], Slug: variet.Product[0].GenderLabel}},
-			ShortDescription: variet.Product[0].FullName,
-			RegularPrice:     228.0,
-			ParentId:         ParentId,
-			Attributes:       []entity.ProductAttribute{entity.ProductAttribute{Slug: "color"}},
-			DefaultAttributes: []entity.ProductDefaultAttribute{
-				entity.ProductDefaultAttribute{
-					Name:   "Color",
-					Option: ind,
-				},
+	paramVariableProduct := wc.CreateProductRequest{
+		Name:             variet.Product[0].Name,
+		Type:             "variable",
+		SKU:              variet.Product[0].Article,
+		Description:      variet.Product[0].Description.Eng,
+		Tags:             []entity.ProductTag{{ID: tagMap[variet.Product[0].GenderLabel], Slug: variet.Product[0].GenderLabel}},
+		ShortDescription: variet.Product[0].FullName,
+		RegularPrice:     228.0,
+
+		Categories: []entity.ProductCategory{{ID: idCat}},
+
+		MetaData: []entity.Meta{
+			entity.Meta{
+				Key:   "Цвет",
+				Value: "Wild Oak",
 			},
-		}
-
-		// Добавление всех размеров
-		for _, valProd := range prod.Size {
-			paramVariableProduct.DefaultAttributes = append(paramVariableProduct.DefaultAttributes, entity.ProductDefaultAttribute{
-				Name:   "Size",
-				Option: valProd,
-			})
-		}
-
-		item, errorItem := wooClient.Services.Product.Create(paramVariableProduct)
-		if errorItem != nil {
-			log.Fatal(errorItem)
-		}
-		ParentId = item.ID
-
+			entity.Meta{
+				Key:   "Цвет",
+				Value: "wild-oak",
+			},
+			entity.Meta{
+				Key:   "Размер",
+				Value: "S",
+			},
+		},
 	}
 
+	item, errorItem := wooClient.Services.Product.Create(paramVariableProduct)
+	if errorItem != nil {
+		log.Fatal(errorItem)
+	}
+	itemID := item.ID
+	fmt.Println("Done itemID", itemID)
+
+	// *******************************************
+
+	//wild-oak
+	//params:=wooClient.Services.ProductVariation.
+
+}
+
+func AddAttr(wooClient *wc.WooCommerce, idAttrColor int, newName, NewSlug string) (tecalAttrId int, tecalAttrName string, tecalAttrSlug string) {
+	items, total, _, _, _ := wooClient.Services.ProductAttributeTerm.All(idAttrColor, wc.ProductAttributeTermsQueryParaTerms{Search: newName})
+	//totalPages, isLastPage, ProductAttributeTermAll
+	// Если такого цвета не существует, то создаём его
+	if total == 0 {
+		AttributeTermCreate, errorCreate := wooClient.Services.ProductAttributeTerm.Create(idAttrColor, wc.CreateProductAttributeTermRequest{
+			Name:        newName,
+			Slug:        NewSlug,
+			Description: "Создано автоматически",
+		})
+		if errorCreate != nil {
+			fmt.Println(errorCreate)
+		}
+		tecalAttrId = AttributeTermCreate.ID
+		tecalAttrName = AttributeTermCreate.Name
+		tecalAttrSlug = AttributeTermCreate.Slug
+	} else {
+		//fmt.Println("total", total)
+		//fmt.Println("totalPages", totalPages)
+		//fmt.Println("isLastPage", isLastPage)
+		//fmt.Println("ProductAttributeTermAll", ProductAttributeTermAll)
+		tecalAttrId = items[0].ID
+		tecalAttrName = items[0].Name
+		tecalAttrSlug = items[0].Slug
+	}
+	return tecalAttrId, tecalAttrName, tecalAttrSlug
 }

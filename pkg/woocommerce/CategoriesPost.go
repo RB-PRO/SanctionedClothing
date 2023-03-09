@@ -3,7 +3,6 @@ package woocommerce
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 )
@@ -76,7 +75,6 @@ func (user *User) AddCat_WC(valetCat MeCat) (int, error) {
 // Используется в качестве внешнего интерфейса для добавления категории товара по методике - добавил - проверил - получил ID
 func (user *User) AddCat(NodeCategoryes *Node, NewCategory bases.Cat) (CatIDcreate int, err error) {
 	//var CatIDcreate int // ID новой или старой категории
-	fmt.Println(NewCategory)
 	for i := 0; i < 4; i++ {
 		findNode, findNodeBool := NodeCategoryes.FindSlug(NewCategory[i].Slug)
 		if !findNodeBool { // Если категория не добавлена
@@ -96,7 +94,6 @@ func (user *User) AddCat(NodeCategoryes *Node, NewCategory bases.Cat) (CatIDcrea
 			if err != nil {
 				return 0, err
 			}
-			fmt.Println("NEW ID CAT", CatIDcreate)
 		} else {
 			CatIDcreate = findNode.Id
 		}

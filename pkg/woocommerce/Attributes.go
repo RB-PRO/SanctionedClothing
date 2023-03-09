@@ -76,9 +76,9 @@ func (attr Attributes) Find_id_of_name(name string) (int, error) {
 //	Attributes.slug -> Attributes.id
 func (attr Attributes) Find_id_of_slug(slug string) (int, error) {
 	for _, value := range attr.Attribute {
-		if value.Slug == slug {
+		if value.Slug == "pa_"+slug {
 			return value.ID, nil
 		}
 	}
-	return 0, errors.New("Find_id_of_name: Не найден аттрибут с такой ссылкой (Slug)")
+	return 0, errors.New("Find_id_of_name: Не найден аттрибут с такой ссылкой (Slug) " + slug)
 }
