@@ -70,6 +70,8 @@ func GenderBook(key string) (string, bool) {
 		return "Женщины", true
 	case "man":
 		return "Мужчины", true
+	case "kid":
+		return "Дети", true
 	default:
 		return key, false
 	}

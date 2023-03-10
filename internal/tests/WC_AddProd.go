@@ -178,12 +178,20 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 	}
 	fmt.Println("ID категории", idCat)
 
-	// Собираем
+	// Создаём аттрибуты товара для цвета
+	for key := range product.Item {
+		tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(wooC, idAttrColor, product.Item[key].ColorEng, key)
+		fmt.Println("Для данного товара Аттрибуты цвета будут:", tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug)
+	}
+
+	// Собираем гендер для загрузки в теги товара
 	idGender, isGenderSlug := bases.GenderBook(product.GenderLabel)
 	if !isGenderSlug {
 		fmt.Println("Не найден гендер.", idGender)
 	}
+	fmt.Println("Гендр:", idGender)
 
+	// Создаём массив цветов с полными назвавниями
 	var colors []string
 	for _, colorSet := range product.Item {
 		colors = append(colors, colorSet.ColorEng)
@@ -199,7 +207,7 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 			})
 		}
 	}
-	// Нужно за раз с категориями загружать.
+	// Структура с исходным товаром
 	paramVariableProduct := wc.CreateProductRequest{
 		Name:             product.Name,
 		Type:             "variable",
@@ -230,16 +238,17 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 		},
 	}
 
+	fmt.Println("1")
 	item, errorItem := wooC.Services.Product.Create(paramVariableProduct)
 	if errorItem != nil {
 		log.Fatal(errorItem)
 	}
+	fmt.Println("2")
 	itemID := item.ID
 	fmt.Println("Done itemID", itemID)
 
 	// Вариационные товары
 	for colorKey, colorItemValue := range product.Item {
-
 		/*
 			// Массив картинок. Но WC не позволяет загрузить картинки в вариационный товар
 			imageInput := make([]entity.ProductImage, 0)
@@ -251,7 +260,6 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 				})
 			}
 		*/
-
 		itemVar, errvar := wooC.Services.ProductVariation.Create(itemID, wc.CreateProductVariationRequest{
 			SKU:          product.Article + colorKey,
 			RegularPrice: colorItemValue.Price,
@@ -277,6 +285,7 @@ func AddAttr(wooClient *wc.WooCommerce, idAttrColor int, newName, NewSlug string
 	//totalPages, isLastPage, ProductAttributeTermAll
 	// Если такого цвета не существует, то создаём его
 	if total == 0 {
+		fmt.Println("СОЗДАЮ")
 		AttributeTermCreate, errorCreate := wooClient.Services.ProductAttributeTerm.Create(idAttrColor, wc.CreateProductAttributeTermRequest{
 			Name:        newName,
 			Slug:        NewSlug,
@@ -289,6 +298,7 @@ func AddAttr(wooClient *wc.WooCommerce, idAttrColor int, newName, NewSlug string
 		tecalAttrName = AttributeTermCreate.Name
 		tecalAttrSlug = AttributeTermCreate.Slug
 	} else {
+		fmt.Println("НЕ СОЗДАЮ")
 		//fmt.Println("total", total)
 		//fmt.Println("totalPages", totalPages)
 		//fmt.Println("isLastPage", isLastPage)
