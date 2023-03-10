@@ -62,6 +62,7 @@ func AddProd() {
 	variet := bases.Variety2{
 		[]bases.Product2{
 			bases.Product2{
+				Manufacturer:   "1.STATE",
 				Name:           "Balloon Sleeve Crew Neck Sweater",
 				FullName:       "Complete your cool-weather look with the soft and cozy 1.STATE™ Balloon Sleeve Crew Neck Sweater.",
 				Link:           "/p/1-state-balloon-sleeve-crew-neck-sweater-antique-white/product/9621708/color/26216",
@@ -143,10 +144,16 @@ func AddProd() {
 		fmt.Println("Не нашёл аттрибут Размера")
 	}
 	fmt.Println("ID аттрибута Размера", idAttrSize)
+	idManuf, isFind_AttrManuf := attr.Find_id_of_name("Производитель")
+	if isFind_AttrManuf != nil {
+		fmt.Println("Не нашёл аттрибут Производителя")
+	}
+	fmt.Println("ID аттрибута Производителя", idManuf)
 
 	//
 	wooClient := wc.NewClient(c)
-	fmt.Println(AddProduct(userWC, wooClient, variet.Product[0], tagMap, NodeCategoryes, idAttrColor, idAttrSize))
+
+	fmt.Println(AddProduct(userWC, wooClient, variet.Product[0], tagMap, NodeCategoryes, idAttrColor, idAttrSize, idManuf))
 
 	//paramAttr:=wc.Term
 
@@ -169,7 +176,10 @@ func AddProd() {
 	*/
 }
 
-func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Product2, tagMap map[string]int, NodeCategoryes *woocommerce.Node, idAttrColor int, idAttrSize int) error {
+func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Product2, tagMap map[string]int, NodeCategoryes *woocommerce.Node, idAttrColor int, idAttrSize int, idManuf int) error {
+
+	ManufrId, ManufName, ManufSlug := AddAttr(wooC, idAttrColor, "Производитель", product.Manufacturer)
+	fmt.Println("Для данного товара Аттрибуты Производителя:", ManufrId, ManufName, ManufSlug)
 
 	// Создать категории для товаров и получить её ID
 	idCat, errorAddCat := userWC.AddCat(NodeCategoryes, product.Cat)
@@ -182,6 +192,11 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 	for key := range product.Item {
 		tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(wooC, idAttrColor, product.Item[key].ColorEng, key)
 		fmt.Println("Для данного товара Аттрибуты цвета будут:", tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug)
+	}
+	// Создаём аттрибуты товара для Размера
+	for _, valSize := range product.Size {
+		tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(wooC, idAttrSize, valSize, bases.FormingColorEng(valSize))
+		fmt.Println("Для данного товара Аттрибуты размера будут:", tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug)
 	}
 
 	// Собираем гендер для загрузки в теги товара
@@ -198,22 +213,32 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 	}
 	// Сделаю массив со всеми изображениями
 	imageInput := make([]entity.ProductImage, 0)
+	var chet int
 	for _, colorItemValue := range product.Item {
 		for indexImage, valueImage := range colorItemValue.Image {
+			if chet == 0 {
+				imageInput = append(imageInput, entity.ProductImage{
+					Src:  valueImage,
+					Name: valueImage + strconv.Itoa(indexImage) + ".jpg",
+					Alt:  valueImage + strconv.Itoa(indexImage),
+				})
+			}
 			imageInput = append(imageInput, entity.ProductImage{
 				Src:  valueImage,
 				Name: valueImage + strconv.Itoa(indexImage) + ".jpg",
 				Alt:  valueImage + strconv.Itoa(indexImage),
 			})
+			chet++
 		}
 	}
+	fmt.Println(product.GenderLabel)
 	// Структура с исходным товаром
 	paramVariableProduct := wc.CreateProductRequest{
 		Name:             product.Name,
 		Type:             "variable",
 		SKU:              product.Article,
 		Description:      product.Description.Eng,
-		Tags:             []entity.ProductTag{{ID: tagMap[product.GenderLabel]}},
+		Tags:             []entity.ProductTag{{Name: idGender, Slug: product.GenderLabel}},
 		ShortDescription: product.FullName,
 		RegularPrice:     228.0,
 		Slug:             bases.FormingColorEng(product.Name),
@@ -223,6 +248,11 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 		Categories: []entity.ProductCategory{{ID: idCat}},
 
 		Attributes: []entity.ProductAttribute{
+			{
+				ID:      idManuf,
+				Options: []string{product.Manufacturer},
+				Visible: true,
+			},
 			{
 				ID:        idAttrColor,
 				Variation: true,
@@ -238,12 +268,12 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 		},
 	}
 
-	fmt.Println("1")
+	//asd := entity.ProductVariation{}
+
 	item, errorItem := wooC.Services.Product.Create(paramVariableProduct)
 	if errorItem != nil {
 		log.Fatal(errorItem)
 	}
-	fmt.Println("2")
 	itemID := item.ID
 	fmt.Println("Done itemID", itemID)
 
@@ -274,22 +304,25 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 		if errvar != nil {
 			fmt.Println(errvar)
 		}
-		fmt.Println(itemVar.ID)
+		fmt.Println("Add variation product", itemVar.ID)
+	}
+
+	PostSmartImageErr := userWC.PostSmartImage(itemID)
+	if PostSmartImageErr != nil {
+		fmt.Println(PostSmartImageErr)
 	}
 
 	return nil
 }
 
 func AddAttr(wooClient *wc.WooCommerce, idAttrColor int, newName, NewSlug string) (tecalAttrId int, tecalAttrName string, tecalAttrSlug string) {
-	items, total, _, _, _ := wooClient.Services.ProductAttributeTerm.All(idAttrColor, wc.ProductAttributeTermsQueryParaTerms{Search: newName})
-	//totalPages, isLastPage, ProductAttributeTermAll
+	items, total, _, _, _ := wooClient.Services.ProductAttributeTerm.All(idAttrColor, wc.ProductAttributeTermsQueryParaTerms{Slug: NewSlug})
 	// Если такого цвета не существует, то создаём его
 	if total == 0 {
-		fmt.Println("СОЗДАЮ")
 		AttributeTermCreate, errorCreate := wooClient.Services.ProductAttributeTerm.Create(idAttrColor, wc.CreateProductAttributeTermRequest{
 			Name:        newName,
 			Slug:        NewSlug,
-			Description: "Создано автоматически",
+			Description: "Создано автоматически при загрузке товара",
 		})
 		if errorCreate != nil {
 			fmt.Println(errorCreate)
@@ -298,7 +331,6 @@ func AddAttr(wooClient *wc.WooCommerce, idAttrColor int, newName, NewSlug string
 		tecalAttrName = AttributeTermCreate.Name
 		tecalAttrSlug = AttributeTermCreate.Slug
 	} else {
-		fmt.Println("НЕ СОЗДАЮ")
 		//fmt.Println("total", total)
 		//fmt.Println("totalPages", totalPages)
 		//fmt.Println("isLastPage", isLastPage)
