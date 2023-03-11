@@ -6,9 +6,11 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 	"github.com/RB-PRO/SanctionedClothing/pkg/woocommerce"
+	gt "github.com/bas24/googletranslatefree"
 	wc "github.com/hiscaler/woocommerce-go"
 	config "github.com/hiscaler/woocommerce-go/config"
 	"github.com/hiscaler/woocommerce-go/entity"
@@ -153,7 +155,9 @@ func AddProd() {
 	//
 	wooClient := wc.NewClient(c)
 
-	fmt.Println(AddProduct(userWC, wooClient, variet.Product[0], tagMap, NodeCategoryes, idAttrColor, idAttrSize, idManuf))
+	translateProduct := ProductTranslate(variet.Product[0])
+
+	fmt.Println(AddProduct(userWC, wooClient, translateProduct, tagMap, NodeCategoryes, idAttrColor, idAttrSize, idManuf))
 
 	//paramAttr:=wc.Term
 
@@ -174,6 +178,50 @@ func AddProd() {
 		}
 		fmt.Println(itemVar.ID)
 	*/
+}
+func ProductTranslate(prod bases.Product2) bases.Product2 {
+
+	prod.Description.Eng = strings.ReplaceAll(prod.Description.Eng, "\t", "")
+	prod.Description.Eng = strings.ReplaceAll(prod.Description.Eng, "#", "")
+	prod.Description.Rus, _ = gt.Translate(prod.Description.Eng, "en", "ru")
+	prod.Name, _ = gt.Translate(prod.Name, "en", "ru")
+	prod.FullName, _ = gt.Translate(prod.FullName, "en", "ru")
+	prod.FullName = strings.ReplaceAll(prod.FullName, "Артикул:", "")
+
+	//tr := translate.New("trnsl.1.1.20170505T201046Z.765061fd7d327f2f.c80d8b95dd956de79d7f9537011fcd3cc802e6e2")
+	//tr := translate.New("trnsl.1.1.20191023T124920Z.63524b1f3817bdc2.1719c9be2a2e95a9ce652519943ee104fb9e0a56")
+	//tr := translate.New("trnsl.1.1.20190120T184305Z.c3a652a65ff5dac8.3a47d3f48cf9619b3a0d89ad5296f28c220f85ad")
+
+	/*
+		response, err := tr.GetLangs("en")
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(response.Langs)
+			fmt.Println(response.Dirs)
+		}
+
+		translation, err := tr.Translate("ru", prod.Description.Eng)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			prod.Description.Rus = translation.Result()
+		}
+		translation, err = tr.Translate("ru", prod.Name)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			prod.Name = translation.Result()
+		}
+		translation, err = tr.Translate("ru", prod.FullName)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			prod.FullName = translation.Result()
+		}
+	*/
+
+	return prod
 }
 
 func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Product2, tagMap map[string]int, NodeCategoryes *woocommerce.Node, idAttrColor int, idAttrSize int, idManuf int) error {
@@ -237,7 +285,7 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 		Name:             product.Name,
 		Type:             "variable",
 		SKU:              product.Article,
-		Description:      product.Description.Eng,
+		Description:      product.Description.Rus,
 		Tags:             []entity.ProductTag{{Name: idGender, Slug: product.GenderLabel}},
 		ShortDescription: product.FullName,
 		RegularPrice:     228.0,
@@ -293,7 +341,7 @@ func AddProduct(userWC *woocommerce.User, wooC *wc.WooCommerce, product bases.Pr
 		itemVar, errvar := wooC.Services.ProductVariation.Create(itemID, wc.CreateProductVariationRequest{
 			SKU:          product.Article + colorKey,
 			RegularPrice: colorItemValue.Price,
-			Description:  "Цвет: " + colorItemValue.ColorEng + "\n" + product.Description.Eng,
+			Description:  "Цвет: " + colorItemValue.ColorEng + "\n" + product.Description.Rus,
 			Image: &entity.ProductImage{
 				Src:  colorItemValue.Image[0],
 				Name: colorItemValue.ColorEng + ".jpg",
