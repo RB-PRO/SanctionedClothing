@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/RB-PRO/SanctionedClothing/internal/tests"
+	pm6wp "github.com/RB-PRO/SanctionedClothing/internal/pm6_wp"
 )
 
 func main() {
@@ -13,5 +13,6 @@ func main() {
 	//tests.TparseANDadd()
 	//tests.Run_pm6()
 	//tests.Run_pm6_adventing_Sortered()
-	tests.AddProd()
+	//tests.AddProd()
+	pm6wp.Start()
 }
