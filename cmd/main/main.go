@@ -1,7 +1,7 @@
 package main
 
 import (
-	pm6wp "github.com/RB-PRO/SanctionedClothing/internal/pm6_wp"
+	pm6wp "github.com/RB-PRO/SanctionedClothing/internal/pm6wp"
 )
 
 func main() {

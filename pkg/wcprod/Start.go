@@ -8,12 +8,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"log"
 	"os"
+	"strconv"
 
+	"github.com/RB-PRO/SanctionedClothing/pkg/bases"
 	"github.com/RB-PRO/SanctionedClothing/pkg/woocommerce"
 	wc "github.com/hiscaler/woocommerce-go"
 	config "github.com/hiscaler/woocommerce-go/config"
+	"github.com/hiscaler/woocommerce-go/entity"
 )
 
 // Созовая структура, которая объединяет в себе все необходимые данные для работы с библиотекой и для загрузки товаров
@@ -33,7 +36,7 @@ type WcAdd struct {
 }
 
 // Инициализации базовой структуры загрузки товара
-func NewWcAdd() (*WcAdd, error) {
+func New() (*WcAdd, error) {
 	// Клиент от сторонней библиотеки(пользовательской)
 	b, err := os.ReadFile("config_test.json")
 	if err != nil {
@@ -115,7 +118,7 @@ func NewWcAdd() (*WcAdd, error) {
 // Функция добавления товара
 func (woo *WcAdd) AddProduct(product bases.Product2) error {
 
-	ManufrId, ManufName, ManufSlug := AddAttr(woo.WooClient, woo.idAttrColor, "Производитель", product.Manufacturer)
+	ManufrId, ManufName, ManufSlug := AddAttr(woo.WooClient, woo.IdAttrColor, "Производитель", product.Manufacturer)
 	fmt.Println("Для данного товара Аттрибуты Производителя:", ManufrId, ManufName, ManufSlug)
 
 	// Создать категории для товаров и получить её ID
@@ -127,12 +130,12 @@ func (woo *WcAdd) AddProduct(product bases.Product2) error {
 
 	// Создаём аттрибуты товара для цвета
 	for key := range product.Item {
-		tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(woo.WooClient, woo.idAttrColor, product.Item[key].ColorEng, key)
+		tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(woo.WooClient, woo.IdAttrColor, product.Item[key].ColorEng, key)
 		fmt.Println("Для данного товара Аттрибуты цвета будут:", tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug)
 	}
 	// Создаём аттрибуты товара для Размера
 	for _, valSize := range product.Size {
-		tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(woo.WooClient, woo.idAttrSize, valSize, bases.FormingColorEng(valSize))
+		tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug := AddAttr(woo.WooClient, woo.IdAttrSize, valSize, bases.FormingColorEng(valSize))
 		fmt.Println("Для данного товара Аттрибуты размера будут:", tecalAttrColorId, tecalAttrColorName, tecalAttrColorSlug)
 	}
 

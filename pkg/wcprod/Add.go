@@ -8,24 +8,7 @@ import (
 	wc "github.com/hiscaler/woocommerce-go"
 )
 
-// Получение значение из файла
-func DataFile(filename string) (string, error) {
-	// Открыть файл
-	fileToken, errorToken := os.Open(filename)
-	if errorToken != nil {
-		return "", errorToken
-	}
-
-	// Прочитать значение файла
-	data := make([]byte, 64)
-	n, err := fileToken.Read(data)
-	if err == io.EOF { // если конец файла
-		return "", errorToken
-	}
-	fileToken.Close() // Закрытие файла
-
-	return string(data[:n]), nil
-}
+// Добавить аттрибут в Woocommerce
 func AddAttr(wooClient *wc.WooCommerce, idAttrColor int, newName, NewSlug string) (tecalAttrId int, tecalAttrName string, tecalAttrSlug string) {
 	items, total, _, _, _ := wooClient.Services.ProductAttributeTerm.All(idAttrColor, wc.ProductAttributeTermsQueryParaTerms{Slug: NewSlug})
 	// Если такого цвета не существует, то создаём его
@@ -51,4 +34,23 @@ func AddAttr(wooClient *wc.WooCommerce, idAttrColor int, newName, NewSlug string
 		tecalAttrSlug = items[0].Slug
 	}
 	return tecalAttrId, tecalAttrName, tecalAttrSlug
+}
+
+// Получение значение из файла
+func DataFile(filename string) (string, error) {
+	// Открыть файл
+	fileToken, errorToken := os.Open(filename)
+	if errorToken != nil {
+		return "", errorToken
+	}
+
+	// Прочитать значение файла
+	data := make([]byte, 64)
+	n, err := fileToken.Read(data)
+	if err == io.EOF { // если конец файла
+		return "", errorToken
+	}
+	fileToken.Close() // Закрытие файла
+
+	return string(data[:n]), nil
 }

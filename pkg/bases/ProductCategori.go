@@ -38,6 +38,8 @@ type Product2 struct {
 	// "Цвет на русском"
 	Item           map[string]ProdParam
 	Specifications map[string]string // Остальные характеристики
+
+	Upload bool // Загружено или нет
 }
 
 // Структура параметров товара
